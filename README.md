@@ -1,4 +1,4 @@
-# SCDB-API
+# SCDB API
 
 ## Initial project
 ```bash
