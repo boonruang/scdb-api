@@ -1,69 +1,118 @@
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config();
+const sequelize = require('../config/db-instance') // 1. IMPORT SEQUELIZE INSTANCE
 
 const app = express()
 
 const DEFAULT_PORT = process.env.NODE_ENV_SERVICE_PORT
 
-// app.use(cors({credentials: true, origin: true}))
-// app.use(cors({credentials: true, origin: '*'}))
 app.use(cors({origin: '*'}))
-
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
-app.use('/api/v2/dashboard', require('./api_dashboard'))
-app.use('/api/v2/price', require('./api_price'))
-app.use('/api/v2/geoland', require('./api_geoland'))
-app.use('/api/v2/geosoil', require('./api_geosoil'))
-app.use('/api/v2/geosalt', require('./api_geosalt'))
-app.use('/api/v2/outsource', require('./api_outsource'))
-app.use('/api/v2/researchinnovation', require('./api_researchinnovation'))
-app.use('/api/v2/knowledgebase', require('./api_knowledgebase'))
-app.use('/api/v2/herbal', require('./api_herbal'))
-app.use('/api/v2/userrole', require('./api_userrole'))
-app.use('/api/v2/farmer', require('./api_farmer'))
-app.use('/api/v2/register', require('./api_register'))
-app.use('/api/v2/philosopher', require('./api_philosopher'))
-app.use('/api/v2/manufacturer', require('./api_manufacturer'))
-app.use('/api/v2/collaborativefarm', require('./api_collaborativefarm'))
-app.use('/api/v2/collaborativefarmherbal', require('./api_collaborativefarmherbal'))
-app.use('/api/v2/collaborativefarmfarmer', require('./api_collaborativefarmfarmer'))
-app.use('/api/v2/entrepreneurherbal', require('./api_entrepreneurherbal'))
-app.use('/api/v2/entrepreneurmedical', require('./api_entrepreneurmedical'))
-app.use('/api/v2/farmerlog', require('./api_farmerlog'))
-app.use('/api/v2/farmerherbal', require('./api_farmerherbal'))
-app.use('/api/v2/farmergroup', require('./api_farmergroup'))
-app.use('/api/v2/farmergroupherbal', require('./api_farmergroupherbal'))
-app.use('/api/v2/farmergroupfarmer', require('./api_farmergroupfarmer'))
-app.use('/api/v2/herbalmarketplace', require('./api_herbalmarketplace'))     
-app.use('/api/v2/property', require('./api_property'))
-app.use('/api/v2/herbalproperty', require('./api_herbalproperty'))
-app.use('/api/v2/character', require('./api_character'))
-app.use('/api/v2/herbalcharacter', require('./api_herbalcharacter'))
-app.use('/api/v2/benefit', require('./api_benefit'))
-app.use('/api/v2/herbalimage', require('./api_herbalimage'))
-app.use('/api/v2/herbalbenefit', require('./api_herbalbenefit'))
-app.use('/api/v2/reference', require('./api_reference'))
-app.use('/api/v2/herbalreference', require('./api_herbalreference'))
-app.use('/api/v2/nutrition', require('./api_nutrition'))
-app.use('/api/v2/herbalnutrition', require('./api_herbalnutrition'))
-app.use('/api/v2/producttype', require('./api_producttype'))
-app.use('/api/v2/producetype', require('./api_producetype'))
-app.use('/api/v2/entretype', require('./api_entretype'))
-app.use('/api/v2/ownertype', require('./api_ownertype'))
-app.use('/api/v2/servicetype', require('./api_servicetype'))
-app.use('/api/v2/standardtype', require('./api_standardtype'))
-app.use('/api/v2/post', require('./api_post'))
-app.use('/api/v2/log', require('./api_log'))
-app.use('/api/v2/user', require('./api_user'))
-app.use('/api/v2/auth', require('./api_auth'))
-app.use('/api/v2/role', require('./api_role'))
+// =================================================================
+// 2. IMPORT MODELS (ส่วนที่เพิ่มเข้ามา)
+// =================================================================
+const Department = require('../models/sciences/department');
+const Staff = require('../models/sciences/staff');
+const StaffEducation = require('../models/sciences/staffEducation');
+const LeaveRecord = require('../models/sciences/leaveRecord');
+const AcademicProgram = require('../models/sciences/academicProgram');
+const Student = require('../models/sciences/student');
+const AdmissionPlan = require('../models/sciences/admissionPlan');
+const Project = require('../models/sciences/project');
+const ProjectStaff = require('../models/sciences/projectStaff');
+const Publication = require('../models/sciences/publication');
+const PublicationAuthor = require('../models/sciences/publicationAuthor');
+const StudentGrant = require('../models/sciences/studentGrant');
+const Document = require('../models/sciences/document');
 
-  
-const PORT = DEFAULT_PORT
 
-app.listen(PORT, () => {
-  console.log('\x1b[36m%s\x1b[0m',`listening on port:${PORT}`)
-})
+// =================================================================
+// 3. DEFINE ASSOCIATIONS (ส่วนที่เพิ่มเข้ามา - สำคัญมาก)
+// =================================================================
+// Department Relationships
+Department.hasMany(Staff, { foreignKey: 'department_id' });
+Department.hasMany(AcademicProgram, { foreignKey: 'department_id' });
+Department.hasMany(Project, { foreignKey: 'responsible_dept_id' });
+Department.hasMany(Document, { foreignKey: 'department_id' });
+
+// Staff Relationships
+Staff.belongsTo(Department, { foreignKey: 'department_id' });
+Staff.hasMany(StaffEducation, { foreignKey: 'staff_id' });
+Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
+Staff.hasMany(Student, { foreignKey: 'advisor_staff_id' });
+Staff.belongsToMany(Project, { through: ProjectStaff, foreignKey: 'staff_id', otherKey: 'project_id' });
+Staff.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'staff_id', otherKey: 'pub_id' });
+
+// AcademicProgram Relationships
+AcademicProgram.belongsTo(Department, { foreignKey: 'department_id' });
+AcademicProgram.hasMany(Student, { foreignKey: 'program_id' });
+AcademicProgram.hasMany(AdmissionPlan, { foreignKey: 'program_id' });
+
+// Student Relationships
+Student.belongsTo(AcademicProgram, { foreignKey: 'program_id' });
+Student.belongsTo(Staff, { as: 'advisor', foreignKey: 'advisor_staff_id' });
+Student.hasMany(StudentGrant, { foreignKey: 'student_id' });
+
+// Project Relationships
+Project.belongsTo(Department, { foreignKey: 'responsible_dept_id' });
+Project.belongsToMany(Staff, { through: ProjectStaff, foreignKey: 'project_id', otherKey: 'staff_id' });
+Project.hasMany(Document, { foreignKey: 'project_id', allowNull: true });
+
+// Publication Relationships
+Publication.belongsToMany(Staff, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'staff_id' });
+
+// Document Relationships
+Document.belongsTo(Department, { foreignKey: 'department_id' });
+Document.belongsTo(Project, { foreignKey: 'project_id' });
+
+// Other relationships
+StaffEducation.belongsTo(Staff, { foreignKey: 'staff_id' });
+LeaveRecord.belongsTo(Staff, { foreignKey: 'staff_id' });
+AdmissionPlan.belongsTo(AcademicProgram, { foreignKey: 'program_id' });
+StudentGrant.belongsTo(Student, { foreignKey: 'student_id' });
+
+
+// =================================================================
+// API ROUTES (โค้ดเดิมของคุณ)
+// =================================================================
+// --- โปรเจคเก่า ---
+app.use('/api/v2/dashboard', require('./routes/dashboard'))
+// ... (โค้ด routes เดิมทั้งหมด)
+app.use('/api/v2/role', require('./routes/role'))
+
+// --- โปรเจคใหม่ (คณะวิทย์) ---
+app.use('/api/v2/department', require('./routes/department'));
+app.use('/api/v2/staff', require('./routes/staff'));
+app.use('/api/v2/staff-education', require('./routes/staffEducation'));
+app.use('/api/v2/leave-record', require('./routes/leaveRecord'));
+app.use('/api/v2/academic-program', require('./routes/academicProgram'));
+app.use('/api/v2/student', require('./routes/student'));
+app.use('/api/v2/admission-plan', require('./routes/admissionPlan'));
+app.use('/api/v2/project', require('./routes/project'));
+app.use('/api/v2/project-staff', require('./routes/projectStaff'));
+app.use('/api/v2/publication', require('./routes/publication'));
+app.use('/api/v2/publication-author', require('./routes/publicationAuthor'));
+app.use('/api/v2/student-grant', require('./routes/studentGrant'));
+app.use('/api/v2/document', require('./routes/document'));
+app.use('/api/v2/log', require('./routes/log'))
+app.use('/api/v2/user', require('./routes/user'))
+app.use('/api/v2/auth', require('./routes/auth'))
+app.use('/api/v2/role', require('./routes/role'))
+
+
+// =================================================================
+// 4. START SERVER WITH CONTROLLED SYNC (ส่วนที่แก้ไข)
+// =================================================================
+const PORT = DEFAULT_PORT || 5000
+
+sequelize.sync({ force: false }).then(() => {
+  console.log('✅ Database & tables created!');
+  app.listen(PORT, () => {
+    console.log('\x1b[36m%s\x1b[0m', `listening on port:${PORT}`)
+  })
+}).catch(error => {
+    console.error('Unable to sync database:', error);
+});
