@@ -20,8 +20,36 @@ router.get('/list', async (req, res) => {
   const userPercent = amountStaff / total
   const logPercent = amountLog/ total
 
+  let academyWorkResult = [
+            {
+                "province": "Biology",
+                "academic": 40,
+                "farmergroup": 35,
+                "collaborativefarm": 30
+            },
+            {
+                "province": "Chemistry",
+                "academic": 78,
+                "farmergroup": 10,
+                "collaborativefarm": 27
+            },
+            {
+                "province": "Physics",
+                "academic": 56,
+                "farmergroup": 7,
+                "collaborativefarm": 25
+            },
+            {
+                "province": "Mathematics",
+                "academic": 35,
+                "farmergroup": 5,
+                "collaborativefarm": 18
+            }
+        ]
+
   try {
     let dashboard = {
+      academicWork: academyWorkResult,
       student: amountStudent.toLocaleString('th-TH'),
       studentPercent:  studentPercent.toLocaleString('th-TH'),
       staff:  amountStaff.toLocaleString('th-TH'),
