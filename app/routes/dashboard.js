@@ -24,26 +24,37 @@ router.get('/list', async (req, res) => {
             {
                 "province": "Biology",
                 "academic": 40,
-                "farmergroup": 35,
-                "collaborativefarm": 30
+                "international": 30,
+                "student": 35,
+                "staff": 20,
+                "teacher": 35,
             },
             {
                 "province": "Chemistry",
                 "academic": 78,
-                "farmergroup": 10,
-                "collaborativefarm": 27
+                "domestic": 10,
+                "international": 27,
+                "student": 78,
+                "staff": 30,
+                "teacher": 25,
             },
             {
                 "province": "Physics",
                 "academic": 56,
-                "farmergroup": 7,
-                "collaborativefarm": 25
+                "domestic": 7,
+                "international": 25,
+                "student": 10,
+                "staff": 21,
+                "teacher": 32,
             },
             {
                 "province": "Mathematics",
                 "academic": 35,
-                "farmergroup": 5,
-                "collaborativefarm": 18
+                "domestic": 5,
+                "international": 18,
+                "student": 15,
+                "staff": 30,
+                "teacher": 42,
             }
         ]
 
