@@ -86,16 +86,16 @@ app.use('/api/v2/role', require('./routes/role'))
 // --- โปรเจคใหม่ (คณะวิทย์) ---
 app.use('/api/v2/department', require('./routes/department'));
 app.use('/api/v2/staff', require('./routes/staff'));
-app.use('/api/v2/staff-education', require('./routes/staffEducation'));
-app.use('/api/v2/leave-record', require('./routes/leaveRecord'));
-app.use('/api/v2/academic-program', require('./routes/academicProgram'));
+app.use('/api/v2/staffeducation', require('./routes/staffEducation'));
+app.use('/api/v2/leaverecord', require('./routes/leaveRecord'));
+app.use('/api/v2/academicprogram', require('./routes/academicProgram'));
 app.use('/api/v2/student', require('./routes/student'));
-app.use('/api/v2/admission-plan', require('./routes/admissionPlan'));
+app.use('/api/v2/admissionplan', require('./routes/admissionPlan'));
 app.use('/api/v2/project', require('./routes/project'));
-app.use('/api/v2/project-staff', require('./routes/projectStaff'));
+app.use('/api/v2/projectstaff', require('./routes/projectStaff'));
 app.use('/api/v2/publication', require('./routes/publication'));
-app.use('/api/v2/publication-author', require('./routes/publicationAuthor'));
-app.use('/api/v2/student-grant', require('./routes/studentGrant'));
+app.use('/api/v2/publicationauthor', require('./routes/publicationAuthor'));
+app.use('/api/v2/studentgrant', require('./routes/studentGrant'));
 app.use('/api/v2/document', require('./routes/document'));
 app.use('/api/v2/log', require('./routes/log'))
 app.use('/api/v2/user', require('./routes/user'))

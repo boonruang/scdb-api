@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
 const academicProgram = require('../../models/sciences/academicProgram')
+const department = require('../../models/sciences/department')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 
@@ -28,10 +29,15 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await academicProgram.findAll()
-    res.json({ result: constants.kResultOk, message: result })
+    let result = await academicProgram.findAll({
+      include: [
+        { model: department, attributes: ['dept_name'] },
+      ],
+      attributes: [ ['program_id', 'id'], 'program_id', 'program_name' ]
+    })
+    res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -42,12 +48,12 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     let result = await academicProgram.findOne({ where: { program_id: req.params.id } })
     if (result) {
-      res.json({ result: constants.kResultOk, message: result })
+      res.json({ status: constants.kResultOk, result: result })
     } else {
-      res.json({ result: constants.kResultNok, message: 'Not found' })
+      res.json({ status: constants.kResultNok, result: 'Not found' })
     }
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
