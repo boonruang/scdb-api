@@ -33,7 +33,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         { model: department, attributes: ['dept_name'] },
       ],
-      attributes: [ ['program_id', 'id'], 'program_id', 'program_name' ]
+      attributes: [ ['program_id', 'id'], 'program_id', 'program_name','degree_level' ]
     })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
@@ -46,7 +46,14 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await academicProgram.findOne({ where: { program_id: req.params.id } })
+    let result = await academicProgram.findOne(
+      { 
+      where: { program_id: req.params.id },
+      include: [
+        { model: department, attributes: ['dept_name'] },
+      ],
+      attributes: [ ['program_id', 'id'], 'program_id', 'program_name','degree_level' ]    
+    })    
     if (result) {
       res.json({ status: constants.kResultOk, result: result })
     } else {

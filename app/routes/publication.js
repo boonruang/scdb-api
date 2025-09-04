@@ -28,10 +28,14 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await publication.findAll()
-    res.json({ result: constants.kResultOk, message: result })
+    let result = await publication.findAll(
+      {
+      attributes: [ ['pub_id', 'id'], 'pub_id', 'title','journal_name','publication_year','quartile', 'database_source']  
+      }
+    )    
+    res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -40,14 +44,18 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await publication.findOne({ where: { pub_id: req.params.id } })
+    let result = await publication.findOne(
+      { 
+      where: { pub_id: req.params.id },
+      attributes: [ ['pub_id', 'id'], 'pub_id', 'title','journal_name','publication_year','quartile', 'database_source']    
+    })    
     if (result) {
-      res.json({ result: constants.kResultOk, message: result })
+      res.json({ status: constants.kResultOk, result: result })
     } else {
-      res.json({ result: constants.kResultNok, message: 'Not found' })
+      res.json({ status: constants.kResultNok, result: 'Not found' })
     }
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
