@@ -90,6 +90,7 @@ app.use('/api/v2/staffeducation', require('./routes/staffEducation'));
 app.use('/api/v2/leaverecord', require('./routes/leaveRecord'));
 app.use('/api/v2/academicprogram', require('./routes/academicProgram'));
 app.use('/api/v2/student', require('./routes/student'));
+app.use('/api/v2/staff', require('./routes/staff'));
 app.use('/api/v2/admissionplan', require('./routes/admissionPlan'));
 app.use('/api/v2/project', require('./routes/project'));
 app.use('/api/v2/projectstaff', require('./routes/projectStaff'));

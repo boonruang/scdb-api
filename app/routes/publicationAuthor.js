@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
+const Publications = require('../../models/sciences/publication')
+const Staff = require('../../models/sciences/staff')
 const publicationAuthor = require('../../models/sciences/publicationAuthor')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
@@ -28,10 +30,18 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await publicationAuthor.findAll()
-    res.json({ result: constants.kResultOk, message: result })
+    let result = await publicationAuthor.findAll(
+      {
+      include: [
+        {model: Publications},
+        {model: Staff},
+      ],     
+      attributes: [ ['pub_id', 'id'], 'pub_id', 'staff_id' ]  
+      }
+    )    
+    res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -43,12 +53,12 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
     // This route finds all author associations for a given publication ID.
     let result = await publicationAuthor.findAll({ where: { pub_id: req.params.id } })
     if (result && result.length > 0) {
-      res.json({ result: constants.kResultOk, message: result })
+      res.json({ status: constants.kResultOk, result: result })
     } else {
-      res.json({ result: constants.kResultNok, message: 'No authors found for this publication' })
+      res.json({ status: constants.kResultNok, result: 'No authors found for this publication' })
     }
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ resstatuslt: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 

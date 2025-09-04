@@ -13,13 +13,13 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields, files) => {
         if (error) {
-            return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
         }
         let result = await projectStaff.create(fields)
-        res.json({ result: constants.kResultOk, message: result })
+        res.json({ status: constants.kResultOk, result: result })
     })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -29,9 +29,9 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
     let result = await projectStaff.findAll()
-    res.json({ result: constants.kResultOk, message: result })
+    res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -43,21 +43,21 @@ router.delete('/', JwtMiddleware.checkToken, async (req, res) => {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
             if (error) {
-                return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+                return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
             }
             const { project_id, staff_id } = fields
             if (!project_id || !staff_id) {
-                return res.json({ result: constants.kResultNok, message: 'project_id and staff_id are required.' })
+                return res.json({ status: constants.kResultNok, result: 'project_id and staff_id are required.' })
             }
             const deleted = await projectStaff.destroy({ where: { project_id, staff_id } })
             if (deleted) {
-                res.json({ result: constants.kResultOk, message: 'Association deleted successfully.' })
+                res.json({ status: constants.kResultOk, result: 'Association deleted successfully.' })
             } else {
-                res.json({ result: constants.kResultNok, message: 'Association not found.' })
+                res.json({ status: constants.kResultNok, result: 'Association not found.' })
             }
         })
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
