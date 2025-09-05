@@ -14,13 +14,13 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields, files) => {
         if (error) {
-            return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
         }
         let result = await academicProgram.create(fields)
-        res.json({ result: constants.kResultOk, message: result })
+        res.json({ status: constants.kResultOk, result: result })
     })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -72,18 +72,18 @@ router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
             if (error) {
-                return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+                return res.json({ result: constants.kResultNok, result: JSON.stringify(error) })
             }
             let [rowsUpdated] = await academicProgram.update(fields, { where: { program_id: req.params.id } })
             if (rowsUpdated > 0) {
                 let result = await academicProgram.findOne({ where: { program_id: req.params.id } })
-                res.json({ result: constants.kResultOk, message: result })
+                res.json({ status: constants.kResultOk, result: result })
             } else {
-                res.json({ result: constants.kResultNok, message: 'Update failed, record not found or no new data.' })
+                res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })
             }
         })
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
@@ -94,12 +94,12 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
     try {
         const deleted = await academicProgram.destroy({ where: { program_id: req.params.id } })
         if (deleted) {
-            res.json({ result: constants.kResultOk, message: 'Record deleted successfully.' })
+            res.json({ status: constants.kResultOk, result: 'Record deleted successfully.' })
         } else {
-            res.json({ result: constants.kResultNok, message: 'Record not found.' })
+            res.json({ status: constants.kResultNok, result: 'Record not found.' })
         }
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
