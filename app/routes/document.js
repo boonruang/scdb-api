@@ -15,13 +15,13 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields, files) => {
         if (error) {
-            return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
         }
         let result = await document.create(fields)
-        res.json({ result: constants.kResultOk, message: result })
+        res.json({ status: constants.kResultOk, result: result })
     })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -36,13 +36,12 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
         {model: Departments}, 
         {model: Projects}, 
       ],     
-      // attributes: [ ['doc_id', 'id'], 'doc_id', 'doc_reference_no','date_received','doc_from','doc_to', 'subject','scopus_url'], 
       attributes: [ ['doc_id', 'id'], 'doc_id', 'doc_reference_no','date_received','doc_from','doc_to', 'subject']  
       }
     )    
-    res.json({ result: constants.kResultOk, message: result })
+    res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -51,14 +50,22 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await document.findOne({ where: { document_id: req.params.id } })
+    let result = await document.findOne(
+      { 
+      where: { doc_id: req.params.id },
+      include: [
+        {model: Departments},
+        {model: Projects},       
+      ],
+      attributes: [ ['doc_id', 'id'], 'doc_id', 'doc_reference_no','date_received','doc_from','doc_to', 'subject']  
+    })    
     if (result) {
-      res.json({ result: constants.kResultOk, message: result })
+      res.json({ status: constants.kResultOk, result: result })
     } else {
-      res.json({ result: constants.kResultNok, message: 'Not found' })
+      res.json({ status: constants.kResultNok, result: 'Not found' })
     }
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -70,18 +77,18 @@ router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
             if (error) {
-                return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+                return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
             }
             let [rowsUpdated] = await document.update(fields, { where: { document_id: req.params.id } })
             if (rowsUpdated > 0) {
                 let result = await document.findOne({ where: { document_id: req.params.id } })
-                res.json({ result: constants.kResultOk, message: result })
+                res.json({ status: constants.kResultOk, result: result })
             } else {
-                res.json({ result: constants.kResultNok, message: 'Update failed, record not found or no new data.' })
+                res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })
             }
         })
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
@@ -92,12 +99,12 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
     try {
         const deleted = await document.destroy({ where: { document_id: req.params.id } })
         if (deleted) {
-            res.json({ result: constants.kResultOk, message: 'Record deleted successfully.' })
+            res.json({ status: constants.kResultOk, result: 'Record deleted successfully.' })
         } else {
-            res.json({ result: constants.kResultNok, message: 'Record not found.' })
+            res.json({ status: constants.kResultNok, result: 'Record not found.' })
         }
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
