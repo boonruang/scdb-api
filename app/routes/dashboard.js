@@ -20,6 +20,62 @@ router.get('/list', async (req, res) => {
   const userPercent = amountStaff / total
   const logPercent = amountLog/ total
 
+    let publicationScopusResult = [
+            {
+                "province": "Q1",
+                "scopus": 72,
+            },
+            {
+                "province": "Q2",
+                "scopus": 99,
+            },
+            {
+                "province": "Q3",
+                "scopus": 22,
+            },
+            {
+                "province": "Q4",
+                "scopus": 11,
+            },
+            {
+                "province": "Tier1",
+                "scopus": 28,
+            },            
+        ]
+
+    let publicationISIResult = [
+            {
+                "province": "Q1",
+                "dummy1" : 0,
+                "ISI(SCIE)": 59,
+            },
+            {
+                "province": "Q2",
+                "dummy1" : 0,
+                "ISI(SCIE)": 40,
+            },
+            {
+                "province": "Q3",
+                "dummy1" : 0,
+                "ISI(SCIE)": 22,
+            },
+            {
+                "province": "Q4",
+                "dummy1" : 0,
+                "ISI(SCIE)": 5,
+            },
+            {
+                "province": "ไม่อยู่ในฐาน",
+                "dummy1" : 0,
+                "ISI(SCIE)": 103,
+            },            
+            {
+                "province": "N/A",
+                "dummy1" : 0,
+                "ISI(SCIE)": 1,
+            },            
+        ]        
+
   let academyWorkResult = [
             {
                 "province": "Biology",
@@ -60,6 +116,8 @@ router.get('/list', async (req, res) => {
 
   try {
     let dashboard = {
+      publicationScopus: publicationScopusResult,
+      publicationISI: publicationISIResult,
       academicWork: academyWorkResult,
       student: amountStudent.toLocaleString('th-TH'),
       studentPercent:  studentPercent.toLocaleString('th-TH'),
