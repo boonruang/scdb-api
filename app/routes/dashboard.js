@@ -22,63 +22,57 @@ router.get('/list', async (req, res) => {
 
     let publicationScopusResult = [
             {
-                "province": "Q1",
+                "publication": "Q1",
                 "scopus": 72,
             },
             {
-                "province": "Q2",
+                "publication": "Q2",
                 "scopus": 99,
             },
             {
-                "province": "Q3",
+                "publication": "Q3",
                 "scopus": 22,
             },
             {
-                "province": "Q4",
+                "publication": "Q4",
                 "scopus": 11,
             },
             {
-                "province": "Tier1",
+                "publication": "Tier1",
                 "scopus": 28,
             },            
         ]
 
     let publicationISIResult = [
             {
-                "province": "Q1",
-                "dummy1" : 0,
+                "publication": "Q1",
                 "ISI(SCIE)": 59,
             },
             {
-                "province": "Q2",
-                "dummy1" : 0,
+                "publication": "Q2",
                 "ISI(SCIE)": 40,
             },
             {
-                "province": "Q3",
-                "dummy1" : 0,
+                "publication": "Q3",
                 "ISI(SCIE)": 22,
             },
             {
-                "province": "Q4",
-                "dummy1" : 0,
+                "publication": "Q4",
                 "ISI(SCIE)": 5,
             },
             {
-                "province": "ไม่อยู่ในฐาน",
-                "dummy1" : 0,
+                "publication": "ไม่อยู่ในฐาน",
                 "ISI(SCIE)": 103,
             },            
             {
-                "province": "N/A",
-                "dummy1" : 0,
+                "publication": "N/A",
                 "ISI(SCIE)": 1,
             },            
         ]        
 
   let academyWorkResult = [
             {
-                "province": "Biology",
+                "catalog": "Biology",
                 "academic": 40,
                 "international": 30,
                 "student": 35,
@@ -86,7 +80,7 @@ router.get('/list', async (req, res) => {
                 "teacher": 35,
             },
             {
-                "province": "Chemistry",
+                "catalog": "Chemistry",
                 "academic": 78,
                 "domestic": 10,
                 "international": 27,
@@ -95,7 +89,7 @@ router.get('/list', async (req, res) => {
                 "teacher": 25,
             },
             {
-                "province": "Physics",
+                "catalog": "Physics",
                 "academic": 56,
                 "domestic": 7,
                 "international": 25,
@@ -104,7 +98,7 @@ router.get('/list', async (req, res) => {
                 "teacher": 32,
             },
             {
-                "province": "Mathematics",
+                "catalog": "Mathematics",
                 "academic": 35,
                 "domestic": 5,
                 "international": 18,
