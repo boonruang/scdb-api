@@ -174,7 +174,78 @@ router.get('/list', async (req, res) => {
                 "publication": "N/A",
                 "ISI(SCIE)": 1,
             },            
-        ]        
+        ] 
+        
+    let studentResult = [
+            {
+                "department": "สถิติ",
+                "bachelor": 69,
+            },
+            {
+                "department": "คณิตศาสตร์",
+                "bachelor": 354,
+            },
+            {
+                "department": "เคมี",
+                "bachelor": 500,
+            },
+            {
+                "department": "ชีววิทยา",
+                "bachelor": 551,
+            },            
+            {
+                "department": "ฟิสิกส์",
+                "bachelor": 86,
+            },            
+            // {
+            //     "department": "นวัตกรรมชีวเคมี",
+            //     "bachelor": 143,
+            // },            
+            // {
+            //     "department": "จุลชีววิทยา",
+            //     "bachelor": 258,
+            // },
+            // {
+            //     "department": "พันธุศาสตร์โมเลกุล",
+            //     "bachelor": 89,
+            // }, 
+            // {
+            //     "department": "ฟิสิกส์",
+            //     "bachelor": 86,
+            // }, 
+            // {
+            //     "department": "ประยุกต์",
+            //     "bachelor": 42,
+            // },
+            // {
+            //     "department": "ประยุกต์พลังงาน",
+            //     "bachelor": 2,
+            // },
+            // {
+            //     "department": "ประยุกต์อิเล็กทรอนิกส์",
+            //     "bachelor": 1,
+            // },
+            // {
+            //     "department": "พลังงาน",
+            //     "bachelor": 62,
+            // },
+            // {
+            //     "department": "กศ.บ.ฟิสิกส์",
+            //     "bachelor": 178,
+            // },            
+            // {
+            //     "department": "ฟิสิกส์ 2.1",
+            //     "bachelor": 13,
+            // },
+            // {
+            //     "department": "ฟิสิกส์ 2.2",
+            //     "bachelor": 14,
+            // }, 
+            // {
+            //     "department": "รวม",
+            //     "bachelor": 2359,
+            // },                                                   
+        ]         
 
   let academyWorkResult = [
             {
@@ -271,6 +342,7 @@ router.get('/list', async (req, res) => {
       studentPhysic22Percent:  studentPhysic22Percent.toLocaleString('th-TH'),      
       studentTotal: amountStudentTotal.toLocaleString('th-TH'),
       studentTotalPercent:  studentTotalPercent.toLocaleString('th-TH'),        
+      studentSummary: studentResult,
       
     }
 
