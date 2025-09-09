@@ -64,6 +64,45 @@ router.get('/list', async (req, res) => {
   const studentPhysic22Percent = amountStudentPhysic22 / amountStudentTotal
   const studentTotalPercent = amountStudentTotal / amountStudentTotal
 
+    let publicationTableResult = [
+            {
+                "description": "ผลงานวิจัยทั้งหมด",
+                "amount": 230,
+                "target" : 200,
+                "remark" : "/",
+            },
+            {
+                "description": "Tier 1",
+                "amount": 26,
+                "target" : 12,
+                "remark" : "/",
+            },
+            {
+                "description": "Q1",
+                "amount": 97,
+                "target" : 48,
+                "remark" : "/",
+            },
+            {
+                "description": "ร่วมกับต่างประเทศ",
+                "amount": 64,
+                "target" : 0,
+                "remark" : "X",
+            },
+            {
+                "description": "Citations 2025",
+                "amount": 6451,
+                "target" : 3200,
+                "remark" : "/",
+            },  
+            {
+                "description": "H-index",
+                "amount": 7.6,
+                "target" : 7.25,
+                "remark" : "/",
+            },                       
+        ]  
+
     let publicationScopusResult = [
             {
                 "publication": "Q1",
@@ -154,6 +193,7 @@ router.get('/list', async (req, res) => {
 
   try {
     let dashboard = {
+      publicationTable: publicationTableResult,
       publicationScopus: publicationScopusResult,
       publicationISI: publicationISIResult,
       academicWork: academyWorkResult,
