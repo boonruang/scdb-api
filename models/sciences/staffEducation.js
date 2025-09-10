@@ -24,6 +24,9 @@ const staffEducation = sequelize.define(
     university: {
       type: Sequelize.STRING,
     },
+    year: {
+      type: Sequelize.INTEGER,
+    },
   },
   {
     timestamps: false,
