@@ -34,7 +34,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: Staff},
       ],     
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'degree', 'university']  
+      attributes: [ ['staff_id', 'id'], 'staff_id', 'degree', 'university', 'year']  
       }
     )
     res.json({ status: constants.kResultOk, result: result })
