@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const staff = require('../../models/sciences/staff')
-const department = require('../../models/sciences/department')
+const Departments = require('../../models/sciences/department')
 const Stafftype = require('../../models/sciences/stafftype')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
@@ -34,8 +34,8 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
     let result = await staff.findAll(
       {
       include: [
-        {model: department},
-        // {model: Stafftype},
+        {model: Departments},
+        {model: Stafftype},
       ],     
       attributes: [ ['staff_id', 'id'], 'staff_id', 'firstname','lastname','position','education','email', 'office_location','startdate' ]  
       }
@@ -55,8 +55,8 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       { 
       where: { staff_id: req.params.id },
       include: [
-        {model: department},
-        // {model: Stafftype},
+        {model: Departments},
+        {model: Stafftype},
       ],
       attributes: [ ['staff_id', 'id'], 'staff_id', 'firstname','lastname','position','education','email', 'office_location','startdate' ]    
     })
