@@ -6,7 +6,7 @@ const staffEducation = require('../../models/sciences/staffEducation')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 
-//  @route              POST  /api/v2/staff-education
+//  @route              POST  /api/v2/staffeducation
 //  @desc               Add staff education using formidable
 //  @access             Private
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
@@ -24,7 +24,7 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-//  @route              GET  /api/v2/staff-education/list
+//  @route              GET  /api/v2/staffeducation/list
 //  @desc               List all staff education
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
@@ -43,7 +43,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-//  @route              GET  /api/v2/staff-education/:id
+//  @route              GET  /api/v2/staffeducation/:id
 //  @desc               Get staff education by id
 //  @access             Private
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
@@ -59,7 +59,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-//  @route              PUT  /api/v2/staff-education/:id
+//  @route              PUT  /api/v2/staffeducation/:id
 //  @desc               Update staff education by id using formidable
 //  @access             Private
 router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
@@ -82,7 +82,7 @@ router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
     }
 })
 
-//  @route              DELETE  /api/v2/staff-education/:id
+//  @route              DELETE  /api/v2/staffeducation/:id
 //  @desc               Delete staff education by id
 //  @access             Private
 router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
