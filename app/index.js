@@ -16,6 +16,7 @@ app.use(express.json())
 // =================================================================
 const Department = require('../models/sciences/department');
 const Staff = require('../models/sciences/staff');
+const Stafftype = require('../models/sciences/stafftype');
 const StaffEducation = require('../models/sciences/staffEducation');
 const LeaveRecord = require('../models/sciences/leaveRecord');
 const AcademicProgram = require('../models/sciences/academicProgram');
@@ -32,6 +33,10 @@ const Document = require('../models/sciences/document');
 // =================================================================
 // 3. DEFINE ASSOCIATIONS (ส่วนที่เพิ่มเข้ามา - สำคัญมาก)
 // =================================================================
+// Stafftype Relationships
+Stafftype.hasMany(Staff, { foreignKey: 'stafftype_id' });
+
+
 // Department Relationships
 Department.hasMany(Staff, { foreignKey: 'department_id' });
 Department.hasMany(AcademicProgram, { foreignKey: 'department_id' });
@@ -40,6 +45,7 @@ Department.hasMany(Document, { foreignKey: 'department_id' });
 
 // Staff Relationships
 Staff.belongsTo(Department, { foreignKey: 'department_id' });
+Staff.belongsTo(Stafftype, { foreignKey: 'stafftype_id' });
 Staff.hasMany(StaffEducation, { foreignKey: 'staff_id' });
 Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
 Staff.hasMany(Student, { foreignKey: 'advisor_staff_id' });
@@ -90,7 +96,7 @@ app.use('/api/v2/staffeducation', require('./routes/staffEducation'));
 app.use('/api/v2/leaverecord', require('./routes/leaveRecord'));
 app.use('/api/v2/academicprogram', require('./routes/academicProgram'));
 app.use('/api/v2/student', require('./routes/student'));
-app.use('/api/v2/staff', require('./routes/staff'));
+app.use('/api/v2/stafftype', require('./routes/stafftype'));
 app.use('/api/v2/admissionplan', require('./routes/admissionPlan'));
 app.use('/api/v2/project', require('./routes/project'));
 app.use('/api/v2/projectstaff', require('./routes/projectStaff'));
