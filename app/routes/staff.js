@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const staff = require('../../models/sciences/staff')
 const department = require('../../models/sciences/department')
+const Stafftype = require('../../models/sciences/stafftype')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 const formidable = require('formidable')
@@ -28,13 +29,15 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @desc               List all staff
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('staff list is called')
   try {
     let result = await staff.findAll(
       {
       include: [
         {model: department},
+        // {model: Stafftype},
       ],     
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'name','position','staff_type','email', 'office_location','scopus_url' ]  
+      attributes: [ ['staff_id', 'id'], 'staff_id', 'firstname','lastname','position','education','email', 'office_location','startdate' ]  
       }
     )
     res.json({ status: constants.kResultOk, result: result })
@@ -52,9 +55,10 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       { 
       where: { staff_id: req.params.id },
       include: [
-        {model: department}
+        {model: department},
+        // {model: Stafftype},
       ],
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'name','position','staff_type','email', 'office_location','scopus_url' ]        
+      attributes: [ ['staff_id', 'id'], 'staff_id', 'firstname','lastname','position','education','email', 'office_location','startdate' ]    
     })
     if (result) {
       res.json({ status: constants.kResultOk, result: result })

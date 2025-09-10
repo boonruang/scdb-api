@@ -10,34 +10,61 @@ const staff = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    name: {
+    firstname: {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    lastname: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },  
     position: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
-    staff_type: {
+    education: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
+    },
+    startdate: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },    
+    position_no: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },        
+    birthday: {
+      type: Sequelize.STRING,
+      allowNull: true,
     },
     department_id: {
       type: Sequelize.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'Departments',
         key: 'department_id',
       },
     },
+    stafftype_id: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Stafftype',
+        key: 'stafftype_id',
+      },
+    },
     email: {
       type: Sequelize.STRING,
-    },
+      allowNull: true,
+    },    
     office_location: {
       type: Sequelize.STRING,
+      allowNull: true,
     },
-    scopus_url: {
+    phone_no: {
       type: Sequelize.STRING,
+      allowNull: true,
     },
   },
   {
