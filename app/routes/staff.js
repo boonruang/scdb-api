@@ -11,9 +11,12 @@ const formidable = require('formidable')
 //  @desc               Add staff using formidable
 //  @access             Private
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('staff add is called')
   try {
     const form = new formidable.IncomingForm() 
     form.parse(req, async (error, fields, files) => {
+      console.log('req files',files)
+      console.log('req fields',fields)      
         if (error) {
             return res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
         }
@@ -37,7 +40,10 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
         {model: Departments},
         {model: Stafftype},
       ],     
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'firstname','lastname','position','education','email', 'office_location','startdate' ]  
+      attributes: [ ['staff_id', 'id'], 'staff_id', 'stafftype_id','department_id', 'firstname','lastname','position', 'position_no', 'education', 'startdate', 'birthday', 'email', 'office_location',],
+      order: [
+        ['staff_id','DESC']
+      ],   
       }
     )
     res.json({ status: constants.kResultOk, result: result })
@@ -58,7 +64,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
         {model: Departments},
         {model: Stafftype},
       ],
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'firstname','lastname','position','education','email', 'office_location','startdate' ]    
+      attributes: [ ['staff_id', 'id'], 'staff_id', 'stafftype_id','department_id', 'firstname','lastname','position', 'position_no', 'education', 'startdate', 'birthday', 'email', 'office_location',]   
     })
     if (result) {
       res.json({ status: constants.kResultOk, result: result })
@@ -73,16 +79,20 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
 //  @route              PUT  /api/v2/staff/:id
 //  @desc               Update staff by id using formidable
 //  @access             Private
-router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
+router.put('/', JwtMiddleware.checkToken, async (req, res) => {
+    console.log('staff update is called')
     try {
         const form = new formidable.IncomingForm() 
         form.parse(req, async (error, fields, files) => {
+
+          const { staff_id, ...rest } = fields
+
             if (error) {
                 return res.json({ result: constants.kResultNok, message: JSON.stringify(error) }) 
             }
-            let [rowsUpdated] = await staff.update(fields, { where: { staff_id: req.params.id } }) 
+            let [rowsUpdated] = await staff.update(fields, { where: { staff_id: staff_id } }) 
             if (rowsUpdated > 0) {
-                let result = await staff.findOne({ where: { staff_id: req.params.id } }) 
+                let result = await staff.findOne({ where: { staff_id: staff_id } }) 
                 res.json({ status: constants.kResultOk, result: result }) 
             } else {
                 res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' }) 

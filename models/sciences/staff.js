@@ -27,7 +27,7 @@ const staff = sequelize.define(
       allowNull: true,
     },
     startdate: {
-      type: Sequelize.STRING,
+      type: Sequelize.DATE,
       allowNull: true,
     },    
     position_no: {
@@ -35,7 +35,7 @@ const staff = sequelize.define(
       allowNull: true,
     },        
     birthday: {
-      type: Sequelize.STRING,
+      type: Sequelize.DATE,
       allowNull: true,
     },
     department_id: {

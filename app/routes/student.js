@@ -15,7 +15,7 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields, files) => {
         if (error) {
-            return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
         }
         let result = await Student.create(fields)
         res.json({ status: constants.kResultOk, result: result })
@@ -33,7 +33,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
     const result = await Student.findAll({
       include: [
         { model: AcademicProgram, attributes: ['program_name'] },
-        { model: Staff, as: 'advisor', attributes: ['name'] }
+        { model: Staff, as: 'advisor', attributes: ['firstname'] }
       ],
       attributes: [ ['student_id', 'id'], 'student_id', 'name' ]
     })
@@ -52,7 +52,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       where: { student_id: req.params.id },
       include: [
         { model: AcademicProgram, attributes: ['program_name'] },
-        { model: Staff, as: 'advisor', attributes: ['name'] }
+        { model: Staff, as: 'advisor', attributes: ['firstname'] }
       ],
       attributes: [ ['student_id', 'id'], 'student_id', 'name' ]
     })
