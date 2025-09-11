@@ -13,13 +13,13 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields, files) => {
         if (error) {
-            return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
         }
         let result = await department.create(fields)
-        res.json({ result: constants.kResultOk, message: result })
+        res.json({ status: constants.kResultOk, result: result })
     })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -28,10 +28,14 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await department.findAll()
-    res.json({ result: constants.kResultOk, message: result })
+    let result = await department.findAll(
+      {
+      attributes: [ ['department_id', 'id'], 'department_id', 'dept_name','dept_type',]   
+      }
+    )
+    res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -42,12 +46,12 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     let result = await department.findOne({ where: { department_id: req.params.id } })
     if (result) {
-      res.json({ result: constants.kResultOk, message: result })
+      res.json({ status: constants.kResultOk, result: result })
     } else {
-      res.json({ result: constants.kResultNok, message: 'Not found' })
+      res.json({ status: constants.kResultNok, result: 'Not found' })
     }
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -59,18 +63,18 @@ router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
             if (error) {
-                return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+                return res.json({ result: constants.kResultNok, result: JSON.stringify(error) })
             }
             let [rowsUpdated] = await department.update(fields, { where: { department_id: req.params.id } })
             if (rowsUpdated > 0) {
                 let result = await department.findOne({ where: { department_id: req.params.id } })
-                res.json({ result: constants.kResultOk, message: result })
+                res.json({ status: constants.kResultOk, result: result })
             } else {
-                res.json({ result: constants.kResultNok, message: 'Update failed, record not found or no new data.' })
+                res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })
             }
         })
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
@@ -81,12 +85,12 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
     try {
         const deleted = await department.destroy({ where: { department_id: req.params.id } })
         if (deleted) {
-            res.json({ result: constants.kResultOk, message: 'Record deleted successfully.' })
+            res.json({ status: constants.kResultOk, result: 'Record deleted successfully.' })
         } else {
-            res.json({ result: constants.kResultNok, message: 'Record not found.' })
+            res.json({ status: constants.kResultNok, result: 'Record not found.' })
         }
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 

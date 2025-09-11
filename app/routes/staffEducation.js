@@ -34,7 +34,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: Staff},
       ],     
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'degree', 'university', 'year']  
+      attributes: [ ['education_id', 'id'], 'education_id', 'staff_id', 'degree', 'university', 'year']  
       }
     )
     res.json({ status: constants.kResultOk, result: result })
@@ -48,7 +48,14 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await staffEducation.findOne({ where: { education_id: req.params.id } })
+    let result = await staffEducation.findOne(
+      { 
+      where: { education_id: req.params.id },
+      include: [
+        {model: Staff},
+      ],
+      attributes: [ ['education_id', 'id'], 'education_id', 'staff_id', 'degree', 'university', 'year']  
+    })
     if (result) {
       res.json({ status: constants.kResultOk, result: result })
     } else {
