@@ -33,7 +33,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         { model: department, attributes: ['dept_name'] },
       ],
-      attributes: [ ['program_id', 'id'], 'program_id', 'program_name','degree_level' ]
+      attributes: [ ['program_id', 'id'], 'program_id', 'department_id', 'program_name','degree_level' ]
     })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
@@ -52,7 +52,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         { model: department, attributes: ['dept_name'] },
       ],
-      attributes: [ ['program_id', 'id'], 'program_id', 'program_name','degree_level' ]    
+      attributes: [ ['program_id', 'id'], 'program_id', 'department_id', 'program_name','degree_level' ]
     })    
     if (result) {
       res.json({ status: constants.kResultOk, result: result })
