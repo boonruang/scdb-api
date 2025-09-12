@@ -126,6 +126,45 @@ router.get('/list', async (req, res) => {
             },            
         ]        
 
+    let planProjectResult = [
+            {
+                "publication": "Q1",
+                "project": 15,
+            },
+            {
+                "publication": "Q2",
+                "project": 20,
+            },
+            {
+                "publication": "Q3",
+                "project": 10,
+            },
+            {
+                "publication": "Q4",
+                "project": 8,
+            },
+        ]
+
+    let planBudgetResult = [
+            {
+                "publication": "Q1",
+                "budget": 72,
+            },
+            {
+                "publication": "Q2",
+                "budget": 99,
+            },
+            {
+                "publication": "Q3",
+                "budget": 22,
+            },
+            {
+                "publication": "Q4",
+                "budget": 11,
+            },
+        ]
+
+
     let publicationScopusResult = [
             {
                 "publication": "Q1",
@@ -147,8 +186,7 @@ router.get('/list', async (req, res) => {
                 "publication": "Tier1",
                 "scopus": 28,
             },            
-        ]
-
+        ]        
     let publicationISIResult = [
             {
                 "publication": "Q1",
@@ -292,6 +330,8 @@ router.get('/list', async (req, res) => {
       publicationISI: publicationISIResult,
       academicWork: academyWorkResult,
       academicPosition: academicPositionResult,
+      planProject: planProjectResult,
+      planBudget: planBudgetResult,
       student: amountStudent.toLocaleString('th-TH'),
       studentPercent:  studentPercent.toLocaleString('th-TH'),
       staff:  amountStaff.toLocaleString('th-TH'),
