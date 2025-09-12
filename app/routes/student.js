@@ -35,7 +35,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
         { model: AcademicProgram, attributes: ['program_name'] },
         { model: Staff, as: 'advisor', attributes: ['firstname'] }
       ],
-      attributes: [ ['student_id', 'id'], 'student_id', 'name' ]
+      attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'program_id', 'advisor_staff_id' ]
     })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
@@ -54,7 +54,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
         { model: AcademicProgram, attributes: ['program_name'] },
         { model: Staff, as: 'advisor', attributes: ['firstname'] }
       ],
-      attributes: [ ['student_id', 'id'], 'student_id', 'name' ]
+      attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'program_id', 'advisor_staff_id' ]
     })
     if (result) {
       res.json({ status: constants.kResultOk, result: result })

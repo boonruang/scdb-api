@@ -9,7 +9,15 @@ const student = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
-    name: {
+    studentOfficial_id: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },    
+    firstname: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    lastname: {
       type: Sequelize.STRING,
       allowNull: false,
     },
