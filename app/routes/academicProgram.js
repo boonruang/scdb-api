@@ -67,16 +67,18 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
 //  @route              PUT  /api/v2/academic-program/:id
 //  @desc               Update academic program by id using formidable
 //  @access             Private
-router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
+router.put('/', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('Academic Program add is called')
     try {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
+          const {program_id, ...rest} = fields
             if (error) {
                 return res.json({ result: constants.kResultNok, result: JSON.stringify(error) })
             }
-            let [rowsUpdated] = await academicProgram.update(fields, { where: { program_id: req.params.id } })
+            let [rowsUpdated] = await academicProgram.update(fields, { where: { program_id: program_id } })
             if (rowsUpdated > 0) {
-                let result = await academicProgram.findOne({ where: { program_id: req.params.id } })
+                let result = await academicProgram.findOne({ where: { program_id: program_id } })
                 res.json({ status: constants.kResultOk, result: result })
             } else {
                 res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })

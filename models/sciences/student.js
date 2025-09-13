@@ -7,6 +7,7 @@ const student = sequelize.define(
     student_id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
+      autoIncrement: true,
       allowNull: false,
     },
     studentOfficial_id: {

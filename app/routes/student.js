@@ -11,17 +11,20 @@ const JwtMiddleware = require('../../config/Jwt-Middleware')
 //  @desc               Add student using formidable
 //  @access             Private
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('Student add is called')
   try {
-    const form = new formidable.IncomingForm()
+    const form = new formidable.IncomingForm() 
     form.parse(req, async (error, fields, files) => {
+      console.log('req files',files)
+      console.log('req fields',fields)      
         if (error) {
-            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
         }
-        let result = await Student.create(fields)
-        res.json({ status: constants.kResultOk, result: result })
-    })
+        let result = await Student.create(fields) 
+        res.json({ status: constants.kResultOk, result: result }) 
+    }) 
   } catch (error) {
-    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
   }
 })
 
@@ -33,9 +36,12 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
     const result = await Student.findAll({
       include: [
         { model: AcademicProgram, attributes: ['program_name'] },
-        { model: Staff, as: 'advisor', attributes: ['firstname'] }
+        { model: Staff, as: 'advisor', attributes: ['firstname', 'lastname'] }
       ],
-      attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'program_id', 'advisor_staff_id' ]
+      attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'program_id', 'advisor_staff_id' ],
+      order: [
+        ['student_id','DESC']
+      ],       
     })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
@@ -52,7 +58,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       where: { student_id: req.params.id },
       include: [
         { model: AcademicProgram, attributes: ['program_name'] },
-        { model: Staff, as: 'advisor', attributes: ['firstname'] }
+        { model: Staff, as: 'advisor', attributes: ['firstname', 'lastname'] }
       ],
       attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'program_id', 'advisor_staff_id' ]
     })
@@ -69,23 +75,27 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
 //  @route              PUT  /api/v2/student/:id
 //  @desc               Update student by id using formidable
 //  @access             Private
-router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
+router.put('/', JwtMiddleware.checkToken, async (req, res) => {
+    console.log('student update is called')
     try {
-        const form = new formidable.IncomingForm()
+        const form = new formidable.IncomingForm() 
         form.parse(req, async (error, fields, files) => {
+
+          const { student_id, ...rest } = fields
+
             if (error) {
-                return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+                return res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
             }
-            let [rowsUpdated] = await Student.update(fields, { where: { student_id: req.params.id } })
+            let [rowsUpdated] = await Student.update(fields, { where: { student_id: student_id } }) 
             if (rowsUpdated > 0) {
-                let result = await Student.findOne({ where: { student_id: req.params.id } })
-                res.json({ status: constants.kResultOk, result: result })
+                let result = await Student.findOne({ where: { student_id: student_id } }) 
+                res.json({ status: constants.kResultOk, result: result }) 
             } else {
-                res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })
+                res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' }) 
             }
-        })
+        }) 
     } catch (error) {
-        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
     }
 })
 
