@@ -9,17 +9,18 @@ const JwtMiddleware = require('../../config/Jwt-Middleware')
 //  @desc               Add publication using formidable
 //  @access             Private
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('publication add is called')
   try {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields, files) => {
         if (error) {
-            return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
         }
         let result = await publication.create(fields)
-        res.json({ result: constants.kResultOk, message: result })
+        res.json({ status: constants.kResultOk, result: result })
     })
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
 })
 
@@ -62,23 +63,25 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
 //  @route              PUT  /api/v2/publication/:id
 //  @desc               Update publication by id using formidable
 //  @access             Private
-router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
+router.put('/', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('publication edit is called')
     try {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
+          const { pub_id, ...rest} = fields
             if (error) {
-                return res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+                return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
             }
-            let [rowsUpdated] = await publication.update(fields, { where: { pub_id: req.params.id } })
+            let [rowsUpdated] = await publication.update(fields, { where: { pub_id: pub_id } })
             if (rowsUpdated > 0) {
-                let result = await publication.findOne({ where: { pub_id: req.params.id } })
-                res.json({ result: constants.kResultOk, message: result })
+                let result = await publication.findOne({ where: { pub_id: pub_id } })
+                res.json({ status: constants.kResultOk, result: result })
             } else {
-                res.json({ result: constants.kResultNok, message: 'Update failed, record not found or no new data.' })
+                res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })
             }
         })
     } catch (error) {
-        res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
+        res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
 
@@ -86,6 +89,8 @@ router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
 //  @desc               Delete publication by id
 //  @access             Private
 router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
+  console.log('publication delete is called')
+  console.log('param id ',req.params.id)
     try {
         const deleted = await publication.destroy({ where: { pub_id: req.params.id } })
         if (deleted) {

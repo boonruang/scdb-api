@@ -33,7 +33,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: department}
       ],
-      attributes: [ ['project_id', 'id'], 'project_id', 'project_name','project_type','start_date','end_date', 'budget_source','budget_amount','status' ]        
+      attributes: [ ['project_id', 'id'], 'project_id', 'responsible_dept_id', 'project_name','project_type','start_date','end_date', 'budget_source','budget_amount','status' ]        
     })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
@@ -51,7 +51,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: department}
       ],
-      attributes: [ ['project_id', 'id'], 'project_id', 'project_name','project_type','start_date','end_date', 'budget_source','budget_amount','status' ]        
+      attributes: [ ['project_id', 'id'], 'project_id', 'responsible_dept_id', 'project_name','project_type','start_date','end_date', 'budget_source','budget_amount','status' ]        
     })
 
     if (result) {
@@ -67,16 +67,17 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
 //  @route              PUT  /api/v2/project/:id
 //  @desc               Update project by id using formidable
 //  @access             Private
-router.put('/:id', JwtMiddleware.checkToken, async (req, res) => {
+router.put('/', JwtMiddleware.checkToken, async (req, res) => {
     try {
         const form = new formidable.IncomingForm()
         form.parse(req, async (error, fields, files) => {
+          const { project_id, ...rest } = fields
             if (error) {
                 return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
             }
-            let [rowsUpdated] = await project.update(fields, { where: { project_id: req.params.id } })
+            let [rowsUpdated] = await project.update(fields, { where: { project_id: project_id } })
             if (rowsUpdated > 0) {
-                let result = await project.findOne({ where: { project_id: req.params.id } })
+                let result = await project.findOne({ where: { project_id: project_id } })
                 res.json({ status: constants.kResultOk, result: result })
             } else {
                 res.json({ status: constants.kResultNok, result: 'Update failed, record not found or no new data.' })

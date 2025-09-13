@@ -16,15 +16,19 @@ const publication = sequelize.define(
     },
     journal_name: {
       type: Sequelize.STRING,
+      allowNull: false,
     },
     publication_year: {
       type: Sequelize.INTEGER,
+      allowNull: false,
     },
     quartile: {
       type: Sequelize.STRING,
+      allowNull: false,
     },
     database_source: {
       type: Sequelize.STRING,
+      allowNull: false,
     },
   },
   {
