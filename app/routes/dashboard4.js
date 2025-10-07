@@ -1,6 +1,8 @@
 const express = require('express')
-const department = require('../../models/sciences/department')
-const academicProgram = require('../../models/sciences/academicProgram')
+const student = require('../../models/sciences/student')
+const staff = require('../../models/sciences/staff')
+const user = require('../../models/user')
+const log = require('../../models/log')
 const router = express.Router()
 
 //  @route                  GET  /api/v2/dashboard/list
@@ -8,11 +10,6 @@ const router = express.Router()
 //  @access                 Private
 router.get('/list', async (req, res) => {
   console.log('get dashboard list API called')
-
-  const amountDept = await department.count({ where: { dept_type: "ภาควิชา" }});
-  const amountBachelor = await academicProgram.count({ where: { degree_level: "ปริญญาตรี" }});
-  const amountMaster = await academicProgram.count({ where: { degree_level: "ปริญญาโท" }});
-  const amountPhd = await academicProgram.count({ where: { degree_level: "ปริญญาเอก" }});
 
     let publicationTableResult = [
             {
@@ -76,7 +73,6 @@ router.get('/list', async (req, res) => {
             },            
         ]        
 
-
     let publicationScopusResult = [
             {
                 "publication": "Q1",
@@ -126,43 +122,51 @@ router.get('/list', async (req, res) => {
             },            
         ] 
         
-    let studentResult = [
+  let academyWorkResult = [
             {
-                "department": "สถิติ",
-                "bachelor": 69,
+                "catalog": "Biology",
+                "academic": 40,
+                "international": 30,
+                "student": 35,
+                "staff": 20,
+                "teacher": 35,
             },
             {
-                "department": "คณิตศาสตร์",
-                "bachelor": 354,
+                "catalog": "Chemistry",
+                "academic": 78,
+                "domestic": 10,
+                "international": 27,
+                "student": 78,
+                "staff": 30,
+                "teacher": 25,
             },
             {
-                "department": "เคมี",
-                "bachelor": 500,
+                "catalog": "Physics",
+                "academic": 56,
+                "domestic": 7,
+                "international": 25,
+                "student": 10,
+                "staff": 21,
+                "teacher": 32,
             },
             {
-                "department": "ชีววิทยา",
-                "bachelor": 551,
-            },            
-            {
-                "department": "ฟิสิกส์",
-                "bachelor": 86,
-            },            
-        ]         
+                "catalog": "Mathematics",
+                "academic": 35,
+                "domestic": 5,
+                "international": 18,
+                "student": 15,
+                "staff": 30,
+                "teacher": 42,
+            }
+        ]
 
   try {
     let dashboard = {
       publicationTable: publicationTableResult,
       publicationScopus: publicationScopusResult,
       publicationISI: publicationISIResult,
+      academicWork: academyWorkResult,
       academicPosition: academicPositionResult,
-
-      amountDept : amountDept,
-      amountBachelor : amountBachelor,
-      amountMaster : amountMaster,
-      amountPhd : amountPhd,
-
-      studentSummary: studentResult,
-      
     }
 
     if (dashboard) {

@@ -86,6 +86,11 @@ StudentGrant.belongsTo(Student, { foreignKey: 'student_id' });
 // =================================================================
 // --- โปรเจคเก่า ---
 app.use('/api/v2/dashboard', require('./routes/dashboard'))
+app.use('/api/v2/dashboard1', require('./routes/dashboard1'))
+app.use('/api/v2/dashboard2', require('./routes/dashboard2'))
+app.use('/api/v2/dashboard3', require('./routes/dashboard3'))
+app.use('/api/v2/dashboard4', require('./routes/dashboard4'))
+app.use('/api/v2/dashboard5', require('./routes/dashboard5'))
 // ... (โค้ด routes เดิมทั้งหมด)
 app.use('/api/v2/role', require('./routes/role'))
 
