@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
-const staff = require('../../models/sciences/staff')
 const publication = require('../../models/sciences/publication')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
@@ -30,24 +29,11 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-const result = await publication.findAll({
-      attributes: [
-        ['pub_id', 'id'],
-        'pub_id',
-        'title',
-        'journal_name',
-        'publication_year',
-        'quartile',
-        'database_source'
-      ],
-      include: [
-        {
-          model: staff,
-          through: { attributes: [] }, // ซ่อนข้อมูลตารางกลาง PublicationAuthor
-          attributes: ['staff_id', 'firstname', 'lastname', 'position'] // เลือกฟิลด์ที่ต้องการแสดงของ author
-        }
-      ]
-    });    
+    let result = await publication.findAll(
+      {
+      attributes: [ ['pub_id', 'id'], 'pub_id', 'title','journal_name','publication_year','quartile', 'database_source']  
+      }
+    )    
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })

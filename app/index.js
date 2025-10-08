@@ -51,6 +51,12 @@ Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
 Staff.hasMany(Student, { foreignKey: 'advisor_staff_id' });
 Staff.belongsToMany(Project, { through: ProjectStaff, foreignKey: 'staff_id', otherKey: 'project_id' });
 Staff.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'staff_id', otherKey: 'pub_id' });
+// Publication Relationships
+Publication.belongsToMany(Staff, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'staff_id' });
+
+PublicationAuthor.belongsTo(Publication, { foreignKey: 'pub_id' });
+PublicationAuthor.belongsTo(Staff, { foreignKey: 'staff_id' });
+
 
 // AcademicProgram Relationships
 AcademicProgram.belongsTo(Department, { foreignKey: 'department_id' });
@@ -66,9 +72,6 @@ Student.hasMany(StudentGrant, { foreignKey: 'student_id' });
 Project.belongsTo(Department, { foreignKey: 'responsible_dept_id' });
 Project.belongsToMany(Staff, { through: ProjectStaff, foreignKey: 'project_id', otherKey: 'staff_id' });
 Project.hasMany(Document, { foreignKey: 'project_id', allowNull: true });
-
-// Publication Relationships
-Publication.belongsToMany(Staff, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'staff_id' });
 
 // Document Relationships
 Document.belongsTo(Department, { foreignKey: 'department_id' });
