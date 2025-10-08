@@ -13,11 +13,6 @@ const router = express.Router()
 router.get('/list', async (req, res) => {
   console.log('get dashboard1 list API called')
 
-  const amountDept = await department.count({ where: { dept_type: "ภาควิชา" }});
-  const amountBachelor = await academicProgram.count({ where: { degree_level: "ปริญญาตรี" }});
-  const amountMaster = await academicProgram.count({ where: { degree_level: "ปริญญาโท" }});
-  const amountPhd = await academicProgram.count({ where: { degree_level: "ปริญญาเอก" }});
-
     const staff_p_lv1 = await staff.count({
         where: {
           [Op.and]: [

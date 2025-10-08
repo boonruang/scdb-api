@@ -50,29 +50,6 @@ router.get('/list', async (req, res) => {
             },                       
         ]  
 
-    let academicPositionResult = [
-            {
-                "position": "ผศ.ดร.",
-                "amount": 64,
-            },
-            {
-                "position": "รศ.ดร.",
-                "amount": 57,
-            },
-            {
-                "position": "อ.ดร.",
-                "amount": 23,
-            },
-            {
-                "position": "อ.",
-                "amount": 11,
-            },
-            {
-                "position": "ศ.ดร.",
-                "amount": 28,
-            },            
-        ]        
-
     let publicationScopusResult = [
             {
                 "publication": "Q1",
@@ -166,7 +143,6 @@ router.get('/list', async (req, res) => {
       publicationScopus: publicationScopusResult,
       publicationISI: publicationISIResult,
       academicWork: academyWorkResult,
-      academicPosition: academicPositionResult,
     }
 
     if (dashboard) {
