@@ -1,5 +1,6 @@
 const express = require('express')
 const department = require('../../models/sciences/department')
+const student = require('../../models/sciences/student')
 const academicProgram = require('../../models/sciences/academicProgram')
 const router = express.Router()
 
@@ -13,25 +14,30 @@ router.get('/list', async (req, res) => {
   const amountMaster = await academicProgram.count({ where: { degree_level: "ปริญญาโท" }});
   const amountPhd = await academicProgram.count({ where: { degree_level: "ปริญญาเอก" }});
 
-  const amountStudentStat = 69
-  const amountStudentMath = 354
-  const amountStudentChem = 500
-  const amountStudentBioChemInno = 143
 
-  const amountStudentBio = 551
-  const amountStudentMicro = 258
-  const amountStudentGen = 86
-  const amountStudentPhysic = 86
+  const amountStudentStat = await student.count({ where: { program_id: 2 }});
+  const amountStudentMath = await student.count({ where: { program_id: 1 }});
+  const amountStudentChem = await student.count({ where: { program_id: 12 }});
+  const amountStudentBioChemInno = await student.count({ where: { program_id: 13 }});
 
-  const amountStudentApply = 42
-  const amountStudentApplyEnergy = 2
-  const amountStudentApplyElec = 1
-  const amountStudentEnergy = 62
+  const amountStudentBio = await student.count({ where: { program_id: 17 }});
+  const amountStudentMicro = await student.count({ where: { program_id: 10 }});
+  const amountStudentGen = await student.count({ where: { program_id: 11 }});
+  const amountStudentPhysic = await student.count({ where: { program_id: 3 }});
 
-  const amountStudentPhysicEdu = 178
-  const amountStudentPhysic21 = 13
-  const amountStudentPhysic22 = 14
-  const amountStudentTotal = 2359
+  const amountStudentApplyPhysic = await student.count({ where: { program_id: 4 }});
+  const amountStudentApplyEnergy = await student.count({ where: { program_id: 5 }});
+  const amountStudentApplyElec = await student.count({ where: { program_id: 6 }});
+  const amountStudentEnergy = await student.count({ where: { program_id: 7 }});
+
+  const amountStudentPhysicEdu = await student.count({ where: { program_id: 8 }});
+  const amountStudentPhysic21 = await student.count({ where: { program_id: 28 }});
+  const amountStudentPhysic22 = await student.count({ where: { program_id: 29 }});
+
+  const amountStudentTotal = amountStudentStat + amountStudentMath + amountStudentChem + amountStudentBioChemInno
+  + amountStudentBio + amountStudentMicro + amountStudentGen + amountStudentPhysic
+  + amountStudentApplyPhysic + amountStudentApplyEnergy + amountStudentApplyElec + amountStudentEnergy
+  + amountStudentPhysicEdu + amountStudentPhysic21 +  amountStudentPhysic22
 
   const studentStatPercent = amountStudentStat / amountStudentTotal
   const studentMathPercent = amountStudentMath / amountStudentTotal
@@ -41,7 +47,7 @@ router.get('/list', async (req, res) => {
   const studentMicroPercent = amountStudentMicro / amountStudentTotal
   const studentGenPercent = amountStudentGen / amountStudentTotal
   const studentPhysicPercent = amountStudentPhysic / amountStudentTotal
-  const studentApplyPercent = amountStudentApply / amountStudentTotal
+  const studentApplyPhysicPercent = amountStudentApplyPhysic / amountStudentTotal
   const studentApplyEnergyPercent = amountStudentApplyEnergy / amountStudentTotal
   const studentApplyElecPercent = amountStudentApplyEnergy / amountStudentTotal
   const studentEnergyPercent = amountStudentEnergy / amountStudentTotal
@@ -76,8 +82,8 @@ router.get('/list', async (req, res) => {
       studentPhysic: amountStudentPhysic.toLocaleString('th-TH'),
       studentPhysicPercent:  studentPhysicPercent.toLocaleString('th-TH'),      
  
-      studentApply: amountStudentApply.toLocaleString('th-TH'),
-      studentApplyPercent:  studentApplyPercent.toLocaleString('th-TH'),     
+      studentApply: amountStudentApplyPhysic.toLocaleString('th-TH'),
+      studentApplyPercent:  studentApplyPhysicPercent.toLocaleString('th-TH'),     
       studentApplyEnergy: amountStudentApplyEnergy.toLocaleString('th-TH'),
       studentApplyEnergyPercent:  studentApplyEnergyPercent.toLocaleString('th-TH'),    
       studentApplyElec: amountStudentApplyElec.toLocaleString('th-TH'),
