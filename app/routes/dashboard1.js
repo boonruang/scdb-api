@@ -437,7 +437,7 @@ router.get('/list', async (req, res) => {
         where: {
           [Op.and]: [
             {  department_id: { [Op.eq] : 1 }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
+            {  stafftype_id: { [Op.eq] : 2 }}       
           ]
         } 
     });    
