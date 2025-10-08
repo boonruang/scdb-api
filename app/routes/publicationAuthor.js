@@ -25,8 +25,8 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-//  @route              GET  /api/v2/publication-author/list
-//  @desc               List all publication-author relations
+//  @route              GET  /api/v2/publicationauthor/list
+//  @desc               List all publicationauthor relations
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
@@ -45,7 +45,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-//  @route              GET  /api/v2/publication-author/:id
+//  @route              GET  /api/v2/publicationauthor/:id
 //  @desc               Get all authors for a given publication id
 //  @access             Private
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
@@ -62,8 +62,8 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-//  @route              PUT  /api/v2/publication-author
-//  @desc               Update a publication-author relation (Not applicable, but endpoint exists for consistency)
+//  @route              PUT  /api/v2/publicationauthor
+//  @desc               Update a publicationuthor relation (Not applicable, but endpoint exists for consistency)
 //  @access             Private
 router.put('/', JwtMiddleware.checkToken, async (req, res) => {
     try {
@@ -91,7 +91,7 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
 })
 
 
-//  @route              DELETE  /api/v2/publication-author
+//  @route              DELETE  /api/v2/publicationauthor
 //  @desc               Remove an author from a publication using formidable
 //  @access             Private
 router.delete('/', JwtMiddleware.checkToken, async (req, res) => {
