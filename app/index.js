@@ -7,7 +7,8 @@ const app = express()
 
 const DEFAULT_PORT = process.env.NODE_ENV_SERVICE_PORT
 
-app.use(cors({origin: '*'}))
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*'
+app.use(cors({ origin: CORS_ORIGIN }))
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 

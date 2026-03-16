@@ -34,9 +34,8 @@ router.post('/verify', JwtMiddleware.checkToken, async (req, res) => {
 //  @route                  POST  /api/v2/auth
 //  @desc                   User auth (login)
 //  @access                 Public
-router.post('/', JwtMiddleware.checkToken, async (req, res) => {
+router.post('/', async (req, res) => {
   const { username, password } = req.body
-  console.log('auth is called user,pass',username, password)
 
   let userFound = await user.findOne({ 
     where: { username: username },

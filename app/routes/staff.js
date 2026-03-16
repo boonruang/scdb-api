@@ -10,23 +10,29 @@ const formidable = require('formidable')
 //  @route              POST  /api/v2/staff
 //  @desc               Add staff using formidable
 //  @access             Private
+const STAFF_ALLOWED_FIELDS = [
+  'stafftype_id', 'department_id', 'position_no',
+  'title_th', 'firstname_th', 'lastname_th',
+  'firstname', 'lastname', 'position', 'education',
+  'startdate', 'birthday', 'email', 'phone_no', 'office_location',
+]
+
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
-  console.log('staff add is called')
   try {
-    const form = new formidable.IncomingForm() 
-    form.parse(req, async (error, fields, files) => {
-      console.log('req files',files)
-      console.log('req fields',fields)      
-        if (error) {
-            return res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
-        }
-        let result = await staff.create(fields) 
-        res.json({ status: constants.kResultOk, result: result }) 
-    }) 
+    const form = new formidable.IncomingForm()
+    form.parse(req, async (error, fields) => {
+      if (error) {
+        return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+      }
+      const allowed = {}
+      STAFF_ALLOWED_FIELDS.forEach(f => { if (fields[f] !== undefined) allowed[f] = fields[f] })
+      let result = await staff.create(allowed)
+      res.json({ status: constants.kResultOk, result: result })
+    })
   } catch (error) {
-    res.json({ status: constants.kResultNok, result: JSON.stringify(error) }) 
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
-}) 
+})
 
 //  @route              GET  /api/v2/staff/list
 //  @desc               List all staff
@@ -90,7 +96,9 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
             if (error) {
                 return res.json({ result: constants.kResultNok, message: JSON.stringify(error) }) 
             }
-            let [rowsUpdated] = await staff.update(fields, { where: { staff_id: staff_id } }) 
+            const allowed = {}
+            STAFF_ALLOWED_FIELDS.forEach(f => { if (fields[f] !== undefined) allowed[f] = fields[f] })
+            let [rowsUpdated] = await staff.update(allowed, { where: { staff_id: staff_id } })
             if (rowsUpdated > 0) {
                 let result = await staff.findOne({ where: { staff_id: staff_id } }) 
                 res.json({ status: constants.kResultOk, result: result }) 
