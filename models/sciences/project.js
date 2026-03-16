@@ -48,7 +48,7 @@ const project = sequelize.define(
 )
 
 ;(async () => {
-  await project.sync({ force: false })
+  await project.sync({ alter: true })
 })()
 
 module.exports = project

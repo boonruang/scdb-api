@@ -43,7 +43,7 @@ const budgetActivity = sequelize.define(
 )
 
 ;(async () => {
-  await budgetActivity.sync({ force: false })
+  await budgetActivity.sync({ alter: true })
 })()
 
 module.exports = budgetActivity

@@ -50,7 +50,7 @@ const document = sequelize.define(
 )
 
 ;(async () => {
-  await document.sync({ force: false })
+  await document.sync({ alter: true })
 })()
 
 module.exports = document

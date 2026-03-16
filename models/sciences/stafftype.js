@@ -23,7 +23,7 @@ const stafftype = sequelize.define(
 )
 
 ;(async () => {
-  await stafftype.sync({ force: false })
+  await stafftype.sync({ alter: true })
 })()
 
 module.exports = stafftype

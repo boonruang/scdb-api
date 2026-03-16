@@ -35,7 +35,7 @@ const leaveRecord = sequelize.define(
 )
 
 ;(async () => {
-  await leaveRecord.sync({ force: false })
+  await leaveRecord.sync({ alter: true })
 })()
 
 module.exports = leaveRecord

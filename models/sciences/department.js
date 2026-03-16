@@ -25,7 +25,7 @@ const department = sequelize.define(
 )
 
 ;(async () => {
-  await department.sync({ force: false })
+  await department.sync({ alter: true })
 })()
 
 module.exports = department

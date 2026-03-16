@@ -35,7 +35,7 @@ const studentGrant = sequelize.define(
 )
 
 ;(async () => {
-  await studentGrant.sync({ force: false })
+  await studentGrant.sync({ alter: true })
 })()
 
 module.exports = studentGrant

@@ -28,7 +28,7 @@ const publicationAuthor = sequelize.define(
 )
 
 ;(async () => {
-  await publicationAuthor.sync({ force: false })
+  await publicationAuthor.sync({ alter: true })
 })()
 
 module.exports = publicationAuthor

@@ -35,7 +35,7 @@ const admissionPlan = sequelize.define(
 )
 
 ;(async () => {
-  await admissionPlan.sync({ force: false })
+  await admissionPlan.sync({ alter: true })
 })()
 
 module.exports = admissionPlan

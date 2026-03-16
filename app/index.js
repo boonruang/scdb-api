@@ -130,7 +130,7 @@ app.use('/api/v2/role', require('./routes/role'))
 // =================================================================
 const PORT = DEFAULT_PORT || 5000
 
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync({ alter: true }).then(() => {
   console.log('✅ Database & tables created!');
   app.listen(PORT, () => {
     console.log('\x1b[36m%s\x1b[0m', `listening on port:${PORT}`)
