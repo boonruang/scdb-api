@@ -15,12 +15,12 @@ const checkToken = async (req, res, next) => {
   JWT.verify(userToken, JwtConfig.secret, (error, data) => {
     if (error) {
       // console.log('JWT Error: ', error)
-      return res.status(501).json({
+      return res.status(401).json({
         error,
       })
     } else if (data.status != true) {
       // console.log('JWT Error: ', error)
-      return res.status(501).json({
+      return res.status(401).json({
         jwtError: 'user inactive',
       })
     } else {
