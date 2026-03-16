@@ -48,7 +48,7 @@ const staff = sequelize.define(
       allowNull: true,
     },
     position_no: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       allowNull: true,
     },
     birthday: {
