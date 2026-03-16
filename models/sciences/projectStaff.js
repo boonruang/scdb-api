@@ -28,7 +28,7 @@ const projectStaff = sequelize.define(
 )
 
 ;(async () => {
-  await projectStaff.sync({ force: false })
+  await projectStaff.sync({ alter: true })
 })()
 
 module.exports = projectStaff

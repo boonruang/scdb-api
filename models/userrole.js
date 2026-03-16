@@ -48,7 +48,7 @@ role.belongsToMany(user,{
 })
 
 ;(async () => {
-  await userrole.sync({ force: false })
+  await userrole.sync({ alter: true })
 })()
 
 module.exports = userrole

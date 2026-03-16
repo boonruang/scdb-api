@@ -45,7 +45,7 @@ const student = sequelize.define(
 )
 
 ;(async () => {
-  await student.sync({ force: false })
+  await student.sync({ alter: true })
 })()
 
 module.exports = student

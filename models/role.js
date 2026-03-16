@@ -26,7 +26,7 @@ const role = sequelize.define(
 )
 
 ;(async () => {
-  await role.sync({ force: false })
+  await role.sync({ alter: true })
 })()
 
 module.exports = role

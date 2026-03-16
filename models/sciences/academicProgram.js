@@ -33,7 +33,7 @@ const academicProgram = sequelize.define(
 )
 
 ;(async () => {
-  await academicProgram.sync({ force: false })
+  await academicProgram.sync({ alter: true })
 })()
 
 module.exports = academicProgram

@@ -38,7 +38,7 @@ const log = sequelize.define(
 )
 
 ;(async () => {
-  await log.sync({ force: false })
+  await log.sync({ alter: true })
 })()
 
 module.exports = log

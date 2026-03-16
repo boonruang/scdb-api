@@ -35,7 +35,7 @@ const staffEducation = sequelize.define(
 )
 
 ;(async () => {
-  await staffEducation.sync({ force: false })
+  await staffEducation.sync({ alter: true })
 })()
 
 module.exports = staffEducation

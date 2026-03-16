@@ -86,7 +86,7 @@ const publication = sequelize.define(
 )
 
 ;(async () => {
-  await publication.sync({ force: false })
+  await publication.sync({ alter: true })
 })()
 
 module.exports = publication

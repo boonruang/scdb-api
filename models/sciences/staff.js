@@ -134,7 +134,7 @@ const staff = sequelize.define(
 )
 
 ;(async () => {
-  await staff.sync({ force: false })
+  await staff.sync({ alter: true })
 })()
 
 module.exports = staff
