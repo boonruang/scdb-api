@@ -117,4 +117,20 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
     }
 })
 
+//  @route              POST  /api/v2/publication/bulk
+//  @desc               Bulk import publications from Excel (Paper sheet)
+//  @access             Private
+router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
+  try {
+    const records = req.body
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.json({ status: constants.kResultNok, result: 'No data provided' })
+    }
+    const created = await publication.bulkCreate(records, { ignoreDuplicates: true })
+    res.json({ status: constants.kResultOk, result: created, count: created.length })
+  } catch (error) {
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+  }
+})
+
 module.exports = router

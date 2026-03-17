@@ -127,4 +127,43 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
     }
 }) 
 
+//  @route              POST  /api/v2/staff/bulkupdateprofile
+//  @desc               Bulk update staff research profile (citations, h-index, etc.) matched by spreadsheet_id
+//  @access             Private
+router.post('/bulkupdateprofile', JwtMiddleware.checkToken, async (req, res) => {
+  try {
+    const records = req.body
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.json({ status: constants.kResultNok, result: 'No data provided' })
+    }
+    const PROFILE_FIELDS = [
+      'title_th', 'firstname_th', 'lastname_th', 'firstname', 'lastname',
+      'position', 'department_id',
+      'citations_total', 'publications_count', 'h_index',
+      'docs_current_year', 'citations_current_year',
+      'scopus_url', 'scholar_url', 'photo_url',
+      'expertise', 'interests', 'email', 'phone_no',
+      'research_fund', 'ethics_license',
+    ]
+    let updated = 0, inserted = 0
+    for (const rec of records) {
+      const { spreadsheet_id, ...fields } = rec
+      if (!spreadsheet_id) continue
+      const allowed = {}
+      PROFILE_FIELDS.forEach(f => { if (fields[f] !== undefined) allowed[f] = fields[f] })
+      const [rows] = await staff.update(allowed, { where: { spreadsheet_id } })
+      if (rows > 0) {
+        updated++
+      } else {
+        // insert new if not found
+        await staff.create({ spreadsheet_id, ...allowed })
+        inserted++
+      }
+    }
+    res.json({ status: constants.kResultOk, updated, inserted, total: records.length })
+  } catch (error) {
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+  }
+})
+
 module.exports = router
