@@ -158,24 +158,50 @@ router.get('/projects', async (req, res) => {
 
     if (budgetCodes.length > 0) {
       const disbRows = await sequelize.query(
-        `SELECT ba.budget_code, bd.disburse_type,
+        `SELECT ba.budget_code, bd.disburse_type, bd.disburse_date,
                 COALESCE(SUM(bd.amount),0) AS total
          FROM "BudgetDisbursements" bd
          JOIN "BudgetActivities" ba ON bd.activity_code = ba.activity_code
          WHERE ba.budget_code IN (:budgetCodes)
-         GROUP BY ba.budget_code, bd.disburse_type`,
+         GROUP BY ba.budget_code, bd.disburse_type, bd.disburse_date`,
         { replacements: { budgetCodes }, type: Sequelize.QueryTypes.SELECT }
       )
+
+      // ปีงบประมาณไทย: Q1=ต.ค.-ธ.ค.(10-12), Q2=ม.ค.-มี.ค.(1-3), Q3=เม.ย.-มิ.ย.(4-6), Q4=ก.ค.-ก.ย.(7-9)
+      const getQuarter = (dateStr) => {
+        if (!dateStr) return null
+        const m = new Date(dateStr).getMonth() + 1 // 1-12
+        if (m >= 10) return 'q1'
+        if (m <= 3)  return 'q2'
+        if (m <= 6)  return 'q3'
+        return 'q4'
+      }
+
       disbRows.forEach(r => {
-        if (!disbMap[r.budget_code]) disbMap[r.budget_code] = { disbursed: 0, committed: 0 }
-        const t = r.disburse_type ? r.disburse_type.trim() : ''
-        if (t.startsWith('2')) disbMap[r.budget_code].disbursed += parseFloat(r.total)
-        else if (t.startsWith('1')) disbMap[r.budget_code].committed += parseFloat(r.total)
+        if (!disbMap[r.budget_code]) disbMap[r.budget_code] = {
+          disbursed: 0, committed: 0,
+          disbQ1: 0, disbQ2: 0, disbQ3: 0, disbQ4: 0,
+          commQ1: 0, commQ2: 0, commQ3: 0, commQ4: 0,
+        }
+        const t   = r.disburse_type ? r.disburse_type.trim() : ''
+        const q   = getQuarter(r.disburse_date)
+        const amt = parseFloat(r.total)
+        if (t.startsWith('2')) {
+          disbMap[r.budget_code].disbursed += amt
+          if (q) disbMap[r.budget_code][`disb${q.toUpperCase()}`] += amt
+        } else if (t.startsWith('1')) {
+          disbMap[r.budget_code].committed += amt
+          if (q) disbMap[r.budget_code][`comm${q.toUpperCase()}`] += amt
+        }
       })
     }
 
     const data = planRows.map(row => {
-      const d = disbMap[row.budget_code] || { disbursed: 0, committed: 0 }
+      const d = disbMap[row.budget_code] || {
+        disbursed: 0, committed: 0,
+        disbQ1: 0, disbQ2: 0, disbQ3: 0, disbQ4: 0,
+        commQ1: 0, commQ2: 0, commQ3: 0, commQ4: 0,
+      }
       return {
         id:             String(row.plan_id),
         budgetCode:     row.budget_code,
@@ -190,6 +216,14 @@ router.get('/projects', async (req, res) => {
         q2Budget:       parseFloat(row.plan_q2) || 0,
         q3Budget:       parseFloat(row.plan_q3) || 0,
         q4Budget:       parseFloat(row.plan_q4) || 0,
+        q1Disbursed:    Math.round(d.disbQ1),
+        q2Disbursed:    Math.round(d.disbQ2),
+        q3Disbursed:    Math.round(d.disbQ3),
+        q4Disbursed:    Math.round(d.disbQ4),
+        q1Committed:    Math.round(d.commQ1),
+        q2Committed:    Math.round(d.commQ2),
+        q3Committed:    Math.round(d.commQ3),
+        q4Committed:    Math.round(d.commQ4),
       }
     })
 
