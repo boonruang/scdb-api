@@ -91,6 +91,9 @@ StudentGrant.belongsTo(Student, { foreignKey: 'student_id' });
 // --- v2: New Dashboards ---
 app.use('/api/v2/dashboard/research', require('./routes/researchDashboard'))
 app.use('/api/v2/dashboard/budget',   require('./routes/budgetDashboard'))
+app.use('/api/v2/budgetplan',         require('./routes/budgetPlan'))
+app.use('/api/v2/budgetactivity',     require('./routes/budgetActivity'))
+app.use('/api/v2/budgetdisbursement', require('./routes/budgetDisbursement'))
 
 // --- v2 (เดิม) ---
 // --- โปรเจคเก่า ---
@@ -127,11 +130,13 @@ app.use('/api/v2/role', require('./routes/role'))
 // =================================================================
 const PORT = DEFAULT_PORT || 5000
 
+// Start server immediately, sync DB in background
+app.listen(PORT, () => {
+  console.log('\x1b[36m%s\x1b[0m', `listening on port:${PORT}`)
+})
+
 sequelize.sync({ alter: true }).then(() => {
-  console.log('✅ Database & tables created!');
-  app.listen(PORT, () => {
-    console.log('\x1b[36m%s\x1b[0m', `listening on port:${PORT}`)
-  })
+  console.log('✅ Database & tables synced!');
 }).catch(error => {
     console.error('Unable to sync database:', error);
 });
