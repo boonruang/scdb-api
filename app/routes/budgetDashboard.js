@@ -118,7 +118,15 @@ router.get('/projects', async (req, res) => {
 
     if (search) {
       replacements.search = `%${search}%`
-      conditions.push('bp.project_name ILIKE :search')
+      conditions.push(`(
+        bp.budget_code    ILIKE :search OR
+        bp.project_name   ILIKE :search OR
+        EXISTS (
+          SELECT 1 FROM "BudgetActivities" ba2
+          WHERE ba2.budget_code = bp.budget_code
+            AND (ba2.activity_code ILIKE :search OR ba2.activity_name ILIKE :search)
+        )
+      )`)
     }
     if (budgetType) {
       replacements.budgetType = budgetType
@@ -167,13 +175,13 @@ router.get('/projects', async (req, res) => {
         { replacements: { budgetCodes }, type: Sequelize.QueryTypes.SELECT }
       )
 
-      // ปีงบประมาณไทย: Q1=ต.ค.-ธ.ค.(10-12), Q2=ม.ค.-มี.ค.(1-3), Q3=เม.ย.-มิ.ย.(4-6), Q4=ก.ค.-ก.ย.(7-9)
+      // Q1=ม.ค.-มี.ค.(1-3), Q2=เม.ย.-มิ.ย.(4-6), Q3=ก.ค.-ก.ย.(7-9), Q4=ต.ค.-ธ.ค.(10-12)
       const getQuarter = (dateStr) => {
         if (!dateStr) return null
         const m = new Date(dateStr).getMonth() + 1 // 1-12
-        if (m >= 10) return 'q1'
-        if (m <= 3)  return 'q2'
-        if (m <= 6)  return 'q3'
+        if (m <= 3)  return 'q1'
+        if (m <= 6)  return 'q2'
+        if (m <= 9)  return 'q3'
         return 'q4'
       }
 
@@ -253,7 +261,9 @@ router.get('/activities', async (req, res) => {
       `SELECT ba.activity_id, ba.activity_code, ba.activity_name,
               ba.budget_requested, ba.start_date, ba.end_date,
               COALESCE(SUM(CASE WHEN bd.disburse_type LIKE '2%' THEN bd.amount ELSE 0 END),0) AS disbursed,
-              COALESCE(SUM(CASE WHEN bd.disburse_type LIKE '1%' THEN bd.amount ELSE 0 END),0) AS committed
+              COALESCE(SUM(CASE WHEN bd.disburse_type LIKE '1%' THEN bd.amount ELSE 0 END),0) AS committed,
+              MAX(CASE WHEN bd.disburse_type LIKE '2%' THEN bd.disburse_date ELSE NULL END) AS last_disburse_date,
+              MAX(CASE WHEN bd.disburse_type LIKE '1%' THEN bd.disburse_date ELSE NULL END) AS last_commit_date
        FROM "BudgetActivities" ba
        LEFT JOIN "BudgetDisbursements" bd ON ba.activity_code = bd.activity_code
        WHERE ba.budget_code = :budgetCode
@@ -263,15 +273,40 @@ router.get('/activities', async (req, res) => {
       { replacements: { budgetCode }, type: Sequelize.QueryTypes.SELECT }
     )
 
+    // ดึง disbursement รายการพร้อม id และวันที่
+    const disbRows = await sequelize.query(
+      `SELECT bd.disbursement_id, bd.activity_code, bd.disburse_type, bd.amount, bd.disburse_date, bd.note
+       FROM "BudgetDisbursements" bd
+       JOIN "BudgetActivities" ba ON bd.activity_code = ba.activity_code
+       WHERE ba.budget_code = :budgetCode
+       ORDER BY bd.activity_code ASC, bd.disburse_date ASC, bd.disbursement_id ASC`,
+      { replacements: { budgetCode }, type: Sequelize.QueryTypes.SELECT }
+    )
+
+    const disbByActivity = {}
+    disbRows.forEach(r => {
+      if (!disbByActivity[r.activity_code]) disbByActivity[r.activity_code] = []
+      disbByActivity[r.activity_code].push({
+        id:     r.disbursement_id,
+        type:   r.disburse_type,
+        amount: Math.round(parseFloat(r.amount) || 0),
+        date:   r.disburse_date,
+        note:   r.note || '',
+      })
+    })
+
     const data = actRows.map(r => ({
-      id:              r.activity_id,
-      activityCode:    r.activity_code,
-      name:            r.activity_name,
-      budgetRequested: parseFloat(r.budget_requested) || 0,
-      disbursed:       Math.round(parseFloat(r.disbursed) || 0),
-      committed:       Math.round(parseFloat(r.committed) || 0),
-      startDate:       r.start_date,
-      endDate:         r.end_date,
+      id:               r.activity_id,
+      activityCode:     r.activity_code,
+      name:             r.activity_name,
+      budgetRequested:  parseFloat(r.budget_requested) || 0,
+      disbursed:        Math.round(parseFloat(r.disbursed) || 0),
+      committed:        Math.round(parseFloat(r.committed) || 0),
+      startDate:        r.start_date,
+      endDate:          r.end_date,
+      lastDisburseDate: r.last_disburse_date || null,
+      lastCommitDate:   r.last_commit_date   || null,
+      disbursements:    disbByActivity[r.activity_code] || [],
     }))
 
     res.json({ result: { budgetCode, data } })

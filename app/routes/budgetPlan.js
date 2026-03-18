@@ -26,12 +26,19 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
-// POST /bulk
+// POST /bulk  — upsert by (budget_code, fiscal_year)
 router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     if (!Array.isArray(req.body)) return res.json({ status: constants.kResultNok, result: 'Body must be an array' })
-    let result = await BudgetPlan.bulkCreate(req.body)
-    res.json({ status: constants.kResultOk, result })
+    let inserted = 0, updated = 0
+    for (const item of req.body) {
+      const [, created] = await BudgetPlan.upsert(item, {
+        conflictFields: ['budget_code', 'fiscal_year']
+      })
+      if (created) inserted++
+      else updated++
+    }
+    res.json({ status: constants.kResultOk, inserted, updated, total: req.body.length })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }

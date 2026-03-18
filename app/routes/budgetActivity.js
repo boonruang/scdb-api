@@ -25,11 +25,48 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
+router.post('/validate-codes', JwtMiddleware.checkToken, async (req, res) => {
+  try {
+    const { budgetCodes } = req.body
+    const sequelize = require('../../config/db-instance')
+    const Sequelize = require('sequelize')
+    const BudgetPlan = require('../../models/sciences/budgetPlan')
+
+    const existing = await BudgetPlan.findAll({
+      where: { budget_code: budgetCodes },
+      attributes: ['budget_code']
+    })
+    const found = existing.map(r => r.budget_code)
+    const missing = budgetCodes.filter(c => !found.includes(c))
+
+    const maxRows = await sequelize.query(
+      `SELECT budget_code, MAX(activity_code) AS max_code
+       FROM "BudgetActivities"
+       WHERE budget_code IN (:budgetCodes)
+       GROUP BY budget_code`,
+      { replacements: { budgetCodes }, type: Sequelize.QueryTypes.SELECT }
+    )
+    const maxCodes = {}
+    maxRows.forEach(r => { maxCodes[r.budget_code] = r.max_code })
+
+    res.json({ status: constants.kResultOk, missing, maxCodes })
+  } catch (error) {
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+  }
+})
+
 router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     if (!Array.isArray(req.body)) return res.json({ status: constants.kResultNok, result: 'Body must be an array' })
-    let result = await BudgetActivity.bulkCreate(req.body)
-    res.json({ status: constants.kResultOk, result })
+    let inserted = 0, updated = 0
+    for (const item of req.body) {
+      const [, created] = await BudgetActivity.upsert(item, {
+        conflictFields: ['budget_code', 'activity_code']
+      })
+      if (created) inserted++
+      else updated++
+    }
+    res.json({ status: constants.kResultOk, inserted, updated, total: req.body.length })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }

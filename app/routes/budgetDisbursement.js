@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
 const BudgetDisbursement = require('../../models/sciences/budgetDisbursement')
+const BudgetActivity = require('../../models/sciences/budgetActivity')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 
@@ -25,6 +26,18 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   }
 })
 
+router.post('/validate-activity-codes', JwtMiddleware.checkToken, async (req, res) => {
+  try {
+    const { activityCodes } = req.body
+    const existing = await BudgetActivity.findAll({ where: { activity_code: activityCodes }, attributes: ['activity_code'] })
+    const found = existing.map(r => r.activity_code)
+    const missing = activityCodes.filter(c => !found.includes(c))
+    res.json({ status: constants.kResultOk, missing })
+  } catch (error) {
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+  }
+})
+
 router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     if (!Array.isArray(req.body)) return res.json({ status: constants.kResultNok, result: 'Body must be an array' })
@@ -40,6 +53,9 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields) => {
       if (error) return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+      const actCode = Array.isArray(fields.activity_code) ? fields.activity_code[0] : fields.activity_code
+      const activity = await BudgetActivity.findOne({ where: { activity_code: actCode } })
+      if (!activity) return res.json({ status: constants.kResultNok, result: 'ไม่พบรหัสกิจกรรม ' + actCode + ' ในระบบ' })
       let result = await BudgetDisbursement.create(fields)
       res.json({ status: constants.kResultOk, result })
     })
@@ -53,6 +69,9 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (error, fields) => {
       if (error) return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+      const actCode = Array.isArray(fields.activity_code) ? fields.activity_code[0] : fields.activity_code
+      const activity = await BudgetActivity.findOne({ where: { activity_code: actCode } })
+      if (!activity) return res.json({ status: constants.kResultNok, result: 'ไม่พบรหัสกิจกรรม ' + actCode + ' ในระบบ' })
       const { disbursement_id, ...rest } = fields
       let [rowsUpdated] = await BudgetDisbursement.update(rest, { where: { disbursement_id } })
       if (rowsUpdated > 0) {
