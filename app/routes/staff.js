@@ -46,10 +46,24 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
         {model: Departments},
         {model: Stafftype},
       ],     
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'stafftype_id','department_id', 'firstname','lastname','position', 'position_no', 'education', 'startdate', 'birthday', 'email', 'office_location',],
+      attributes: [
+        ['staff_id', 'id'], 'staff_id', 'spreadsheet_id',
+        'stafftype_id', 'department_id',
+        'position_no', 'title_th',
+        'firstname_th', 'lastname_th',
+        'firstname', 'lastname',
+        'position', 'education',
+        'startdate', 'birthday',
+        'email', 'phone_no', 'office_location',
+        'citations_total', 'publications_count', 'h_index',
+        'docs_current_year', 'citations_current_year',
+        'scopus_url', 'scholar_url', 'photo_url',
+        'expertise', 'interests',
+        'research_fund', 'ethics_license',
+      ],
       order: [
         ['staff_id','DESC']
-      ],   
+      ],
       }
     )
     res.json({ status: constants.kResultOk, result: result })
@@ -70,7 +84,21 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
         {model: Departments},
         {model: Stafftype},
       ],
-      attributes: [ ['staff_id', 'id'], 'staff_id', 'stafftype_id','department_id', 'firstname','lastname','position', 'position_no', 'education', 'startdate', 'birthday', 'email', 'office_location',]   
+      attributes: [
+        ['staff_id', 'id'], 'staff_id', 'spreadsheet_id',
+        'stafftype_id', 'department_id',
+        'position_no', 'title_th',
+        'firstname_th', 'lastname_th',
+        'firstname', 'lastname',
+        'position', 'education',
+        'startdate', 'birthday',
+        'email', 'phone_no', 'office_location',
+        'citations_total', 'publications_count', 'h_index',
+        'docs_current_year', 'citations_current_year',
+        'scopus_url', 'scholar_url', 'photo_url',
+        'expertise', 'interests',
+        'research_fund', 'ethics_license',
+      ],
     })
     if (result) {
       res.json({ status: constants.kResultOk, result: result })

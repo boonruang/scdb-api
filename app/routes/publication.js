@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
+const { Op } = require('sequelize')
 const staff = require('../../models/sciences/staff')
 const publication = require('../../models/sciences/publication')
+const publicationAuthor = require('../../models/sciences/publicationAuthor')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 
@@ -118,16 +120,55 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
 })
 
 //  @route              POST  /api/v2/publication/bulk
-//  @desc               Bulk import publications from Excel (Paper sheet)
+//  @desc               Bulk import publications from Excel (Paper sheet) + create author links
 //  @access             Private
 router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    const records = req.body
-    if (!Array.isArray(records) || records.length === 0) {
+    // รองรับทั้ง format เก่า (array) และใหม่ ({ publications, author_links })
+    var records = Array.isArray(req.body) ? req.body : (req.body.publications || [])
+    var links = Array.isArray(req.body.author_links) ? req.body.author_links : []
+
+    if (!records.length) {
       return res.json({ status: constants.kResultNok, result: 'No data provided' })
     }
+
+    // Step 1: bulkCreate publications
     const created = await publication.bulkCreate(records, { ignoreDuplicates: true })
-    res.json({ status: constants.kResultOk, result: created, count: created.length })
+
+    // Step 2: query pub_id จริงจาก DB (ignoreDuplicates rows ที่ซ้ำอาจไม่ return)
+    var pubSpreadsheetIds = records.map(function(r) { return r.spreadsheet_id }).filter(Boolean)
+    var pubRows = await publication.findAll({
+      where: { spreadsheet_id: { [Op.in]: pubSpreadsheetIds } },
+      attributes: ['pub_id', 'spreadsheet_id']
+    })
+    var pubMap = {}
+    pubRows.forEach(function(p) { pubMap[p.spreadsheet_id] = p.pub_id })
+
+    // Step 3: สร้าง PublicationAuthor links
+    var linksCreated = 0
+    if (links.length > 0) {
+      var authorSpreadsheetIds = links.map(function(l) { return l.author_spreadsheet_id }).filter(Boolean)
+      var uniqueAuthorIds = authorSpreadsheetIds.filter(function(v, i, a) { return a.indexOf(v) === i })
+      var staffRows = await staff.findAll({
+        where: { spreadsheet_id: { [Op.in]: uniqueAuthorIds } },
+        attributes: ['staff_id', 'spreadsheet_id']
+      })
+      var staffMap = {}
+      staffRows.forEach(function(s) { staffMap[s.spreadsheet_id] = s.staff_id })
+
+      var junctions = []
+      links.forEach(function(link) {
+        var pubId = pubMap[link.pub_spreadsheet_id]
+        var staffId = staffMap[link.author_spreadsheet_id]
+        if (pubId && staffId) junctions.push({ pub_id: pubId, staff_id: staffId })
+      })
+      if (junctions.length > 0) {
+        await publicationAuthor.bulkCreate(junctions, { ignoreDuplicates: true })
+        linksCreated = junctions.length
+      }
+    }
+
+    res.json({ status: constants.kResultOk, count: created.length, links_count: linksCreated })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
