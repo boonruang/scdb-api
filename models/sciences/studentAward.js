@@ -1,10 +1,10 @@
 const Sequelize = require('sequelize')
 const sequelize = require('../../config/db-instance')
 
-const studentGrant = sequelize.define(
-  'StudentGrants',
+const studentAward = sequelize.define(
+  'StudentAwards',
   {
-    grant_id: {
+    award_id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -12,42 +12,37 @@ const studentGrant = sequelize.define(
     },
     student_id: {
       type: Sequelize.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'Students',
         key: 'student_id',
       },
     },
-    grant_name: {
-      type: Sequelize.STRING,
+    award_name: {
+      type: Sequelize.TEXT,
+      allowNull: true,
     },
-    conference_name: {
-      type: Sequelize.STRING,
-    },
-    amount: {
-      type: Sequelize.FLOAT,
-    },
-    grant_type: {
+    award_level: {
       type: Sequelize.STRING,
       allowNull: true,
     },
-    grant_source: {
+    venue: {
       type: Sequelize.STRING,
       allowNull: true,
     },
-    loan_status: {
-      type: Sequelize.STRING,
+    award_date: {
+      type: Sequelize.DATEONLY,
       allowNull: true,
     },
   },
   {
     timestamps: false,
-    tableName: 'StudentGrants'
+    tableName: 'StudentAwards',
   },
 )
 
 ;(async () => {
-  await studentGrant.sync({ alter: true })
+  await studentAward.sync({ alter: true })
 })()
 
-module.exports = studentGrant
+module.exports = studentAward

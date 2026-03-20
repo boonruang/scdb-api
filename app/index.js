@@ -28,6 +28,8 @@ const ProjectStaff = require('../models/sciences/projectStaff');
 const Publication = require('../models/sciences/publication');
 const PublicationAuthor = require('../models/sciences/publicationAuthor');
 const StudentGrant = require('../models/sciences/studentGrant');
+const StudentAward = require('../models/sciences/studentAward');
+const StudentActivity = require('../models/sciences/studentActivity');
 const Document = require('../models/sciences/document');
 
 
@@ -49,7 +51,6 @@ Staff.belongsTo(Department, { foreignKey: 'department_id' });
 Staff.belongsTo(Stafftype, { foreignKey: 'stafftype_id' });
 Staff.hasMany(StaffEducation, { foreignKey: 'staff_id' });
 Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
-Staff.hasMany(Student, { foreignKey: 'advisor_staff_id' });
 Staff.belongsToMany(Project, { through: ProjectStaff, foreignKey: 'staff_id', otherKey: 'project_id' });
 Staff.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'staff_id', otherKey: 'pub_id' });
 // Publication Relationships
@@ -61,13 +62,12 @@ PublicationAuthor.belongsTo(Staff, { foreignKey: 'staff_id' });
 
 // AcademicProgram Relationships
 AcademicProgram.belongsTo(Department, { foreignKey: 'department_id' });
-AcademicProgram.hasMany(Student, { foreignKey: 'program_id' });
 AcademicProgram.hasMany(AdmissionPlan, { foreignKey: 'program_id' });
 
 // Student Relationships
-Student.belongsTo(AcademicProgram, { foreignKey: 'program_id' });
-Student.belongsTo(Staff, { as: 'advisor', foreignKey: 'advisor_staff_id' });
 Student.hasMany(StudentGrant, { foreignKey: 'student_id' });
+Student.hasMany(StudentAward, { foreignKey: 'student_id' });
+StudentAward.belongsTo(Student, { foreignKey: 'student_id' });
 
 // Project Relationships
 Project.belongsTo(Department, { foreignKey: 'responsible_dept_id' });
@@ -99,7 +99,6 @@ app.use('/api/v2/budgetdisbursement', require('./routes/budgetDisbursement'))
 // --- โปรเจคเก่า ---
 app.use('/api/v2/dashboard1', require('./routes/dashboard1'))
 app.use('/api/v2/dashboard2', require('./routes/dashboard2'))
-app.use('/api/v2/dashboard3', require('./routes/dashboard3'))
 app.use('/api/v2/dashboard6', require('./routes/dashboard6'))
 // ... (โค้ด routes เดิมทั้งหมด)
 app.use('/api/v2/role', require('./routes/role'))
@@ -118,6 +117,8 @@ app.use('/api/v2/projectstaff', require('./routes/projectStaff'));
 app.use('/api/v2/publication', require('./routes/publication'));
 app.use('/api/v2/publicationauthor', require('./routes/publicationAuthor'));
 app.use('/api/v2/studentgrant', require('./routes/studentGrant'));
+app.use('/api/v2/studentaward', require('./routes/studentAward'));
+app.use('/api/v2/studentactivity', require('./routes/studentActivity'));
 app.use('/api/v2/document', require('./routes/document'));
 app.use('/api/v2/log', require('./routes/log'))
 app.use('/api/v2/user', require('./routes/user'))

@@ -34,16 +34,25 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
     const result = await Student.findAll({
-      include: [
-        { model: AcademicProgram, attributes: ['program_name'] },
-        { model: Staff, as: 'advisor', attributes: ['firstname', 'lastname'] }
-      ],
-      attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'program_id', 'advisor_staff_id' ],
-      order: [
-        ['student_id','DESC']
-      ],       
+      attributes: [ ['student_id', 'id'], 'student_id', 'studentOfficial_id', 'firstname', 'lastname', 'major_name', 'department_name', 'entry_year' ],
+      order: [['student_id', 'DESC']],
     })
     res.json({ status: constants.kResultOk, result: result })
+  } catch (error) {
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+  }
+})
+
+//  @route  POST /api/v2/student/bulk
+//  @desc   Bulk upsert students from Excel
+router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
+  try {
+    var records = Array.isArray(req.body) ? req.body : (req.body.records || [])
+    if (!records.length) return res.json({ status: constants.kResultNok, result: 'No data provided' })
+    var result = await Student.bulkCreate(records, {
+      updateOnDuplicate: ['firstname', 'lastname', 'major_name', 'department_name', 'entry_year'],
+    })
+    res.json({ status: constants.kResultOk, count: result.length })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }
@@ -114,5 +123,6 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
         res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
     }
 })
+
 
 module.exports = router

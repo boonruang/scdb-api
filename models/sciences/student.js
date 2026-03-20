@@ -22,20 +22,17 @@ const student = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
-    program_id: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'AcademicPrograms',
-        key: 'program_id',
-      },
+    major_name: {
+      type: Sequelize.STRING,
+      allowNull: true,
     },
-    advisor_staff_id: {
+    department_name: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    entry_year: {
       type: Sequelize.INTEGER,
-      references: {
-        model: 'Staff',
-        key: 'staff_id',
-      },
+      allowNull: true,
     },
   },
   {

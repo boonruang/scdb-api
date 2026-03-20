@@ -37,14 +37,14 @@ router.post('/verify', JwtMiddleware.checkToken, async (req, res) => {
 router.post('/', async (req, res) => {
   const { username, password } = req.body
 
-  let userFound = await user.findOne({ 
+  let userFound = await user.findOne({
     where: { username: username },
-    include : {
+    include: {
       model: role,
       through: {
         attributes: []
       }
-    } 
+    }
   })
   if (userFound != null) {
     // user found

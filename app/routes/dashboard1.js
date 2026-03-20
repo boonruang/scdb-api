@@ -1,8 +1,6 @@
 const express = require('express')
-const student = require('../../models/sciences/student')
 const staff = require('../../models/sciences/staff')
 const department = require('../../models/sciences/department')
-const academicProgram = require('../../models/sciences/academicProgram')
 const Sequelize = require('sequelize')
 const Op = Sequelize.Op
 const router = express.Router()
@@ -333,57 +331,11 @@ router.get('/list', async (req, res) => {
   //  const staff_techcher_all = await staff.count({ where: { stafftype_id: 1 }});
   //  const staff_employee_all = await staff.count({ where: { stafftype_id: 2 }});
 
-    // นับจำนวนนักเรียนที่อยู่ภาควิชาคณิตศาสตร์ (department_id = 1)
-    const student_mathematics_count = await student.count({
-      include: [
-        {
-          model: academicProgram,
-          required: true, 
-          where: {
-            department_id: 1
-          }
-        }
-      ]
-    });
-
-    // นับจำนวนนักเรียนที่อยู่ภาควิชาฟิสิกส์ (department_id = 2)
-    const student_physics_count = await student.count({
-      include: [
-        {
-          model: academicProgram,
-          required: true, 
-          where: {
-            department_id: 2
-          }
-        }
-      ]
-    });    
-
-    // นับจำนวนนักเรียนที่อยู่ภาควิชาชีววิทยา (department_id = 3)
-    const student_biology_count = await student.count({
-      include: [
-        {
-          model: academicProgram,
-          required: true, 
-          where: {
-            department_id: 3
-          }
-        }
-      ]
-    });  
-    
-    // นับจำนวนนักเรียนที่อยู่ภาควิชาเคมี (department_id = 4)
-    const student_chemistry_count = await student.count({
-      include: [
-        {
-          model: academicProgram,
-          required: true, 
-          where: {
-            department_id: 4
-          }
-        }
-      ]
-    });       
+    // นิสิตอยู่ใน dashboard2 — ไม่ query ที่นี่
+    const student_mathematics_count = 0
+    const student_physics_count     = 0
+    const student_biology_count     = 0
+    const student_chemistry_count   = 0
 
 
     // นับจำนวนอาจารย์

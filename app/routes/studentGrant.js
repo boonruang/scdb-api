@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const { Op } = require('sequelize')
 const formidable = require('formidable')
 const studentGrant = require('../../models/sciences/studentGrant')
 const Students = require('../../models/sciences/student')
@@ -46,6 +47,39 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
 //  @route              GET  /api/v2/student-grant/:id
 //  @desc               Get student grant by id
 //  @access             Private
+//  @route  POST /api/v2/studentgrant/bulk
+//  @desc   Bulk import student grants, resolve studentOfficial_id → student_id
+router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
+  try {
+    var records = Array.isArray(req.body) ? req.body : (req.body.records || [])
+    if (!records.length) return res.json({ status: constants.kResultNok, result: 'No data provided' })
+
+    var officialIds = records.map(function(r) { return r.studentOfficial_id }).filter(Boolean)
+    var studentRows = await Students.findAll({
+      where: { studentOfficial_id: { [Op.in]: officialIds } },
+      attributes: ['student_id', 'studentOfficial_id'],
+    })
+    var studentMap = {}
+    studentRows.forEach(function(s) { studentMap[s.studentOfficial_id] = s.student_id })
+
+    var toInsert = records.map(function(r) {
+      return {
+        student_id: studentMap[r.studentOfficial_id] || null,
+        grant_name: r.grant_name || null,
+        amount: parseFloat(r.amount) || 0,
+        grant_type: r.grant_type || null,
+        grant_source: r.grant_source || null,
+        loan_status: r.loan_status || null,
+      }
+    }).filter(function(r) { return r.student_id })
+
+    var created = await studentGrant.bulkCreate(toInsert, { ignoreDuplicates: false })
+    res.json({ status: constants.kResultOk, count: created.length })
+  } catch (error) {
+    res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
+  }
+})
+
 router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     let result = await studentGrant.findOne(
@@ -105,5 +139,6 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
         res.json({ result: constants.kResultNok, message: JSON.stringify(error) })
     }
 })
+
 
 module.exports = router
