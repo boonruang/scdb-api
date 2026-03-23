@@ -1,479 +1,89 @@
 const express = require('express')
-const staff = require('../../models/sciences/staff')
-const department = require('../../models/sciences/department')
-const Sequelize = require('sequelize')
-const Op = Sequelize.Op
 const router = express.Router()
+const Staff = require('../../models/sciences/staff')
+const LeaveRecord = require('../../models/sciences/leaveRecord')
+const { Op } = require('sequelize')
 
-//  @route                  GET  /api/v2/dashboard/list
-//  @desc                   list all dashboard
-//  @access                 Private
+// GET /api/v2/dashboard/list
 router.get('/list', async (req, res) => {
-  console.log('get dashboard1 list API called')
-
-    const staff_p_lv1 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });
-
-    const staff_p_lv2 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "รองศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });
-
-    const staff_p_lv3 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ผู้ช่วยศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });
-
-    const staff_p_lv4 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });
-
-    const staff_p_lv5 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });
-
-
-    let academicPositionResult = [
-            {
-                "position": "ผศ.ดร.",
-                "amount": `${staff_p_lv3}`,
-            },
-            {
-                "position": "รศ.ดร.",
-                "amount": `${staff_p_lv2}`,
-            },
-            {
-                "position": "อ.ดร.",
-                "amount": `${staff_p_lv4}`,
-            },
-            {
-                "position": "อ.",
-                "amount": `${staff_p_lv5}`,
-            },
-            {
-                "position": "ศ.ดร.",
-                "amount": `${staff_p_lv1}`,
-            },            
-        ]        
-
-
-// ตำแหน่งทางวิชาการภาควิชาคณิตศาสตร์
-    const staff_mathematics_prof1 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });
-
-    const staff_mathematics_prof2 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "รองศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });   
-    
-    const staff_mathematics_prof3 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ผู้ช่วยศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });    
-    
-    
-    const staff_mathematics_prof4 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });     
-
-
-    const staff_mathematics_prof5 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });      
-
-// ตำแหน่งทางวิชาการภาควิชาฟิสิกส์
-    const staff_physics_prof1 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });
-
-    const staff_physics_prof2 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "รองศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });   
-    
-    const staff_physics_prof3 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ผู้ช่วยศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });    
-    
-    
-    const staff_physics_prof4 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });     
-
-
-    const staff_physics_prof5 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });      
-
-// ตำแหน่งทางวิชาการภาควิชาชีววิทยา
-    const staff_biology_prof1 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });
-
-    const staff_biology_prof2 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "รองศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });   
-    
-    const staff_biology_prof3 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ผู้ช่วยศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });    
-    
-    
-    const staff_biology_prof4 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });     
-
-
-    const staff_biology_prof5 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });      
-
-// ตำแหน่งทางวิชาการภาควิชาเคมี
-    const staff_chemistry_prof1 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });
-
-    const staff_chemistry_prof2 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "รองศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });   
-    
-    const staff_chemistry_prof3 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "ผู้ช่วยศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });    
-    
-    
-    const staff_chemistry_prof4 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์ศาสตราจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    });     
-
-
-    const staff_chemistry_prof5 = await staff.count({
-        where: {
-          [Op.and]: [
-            {  position: { [Op.eq] : "อาจารย์" }}, 
-            {  stafftype_id: { [Op.eq] : 1 }},       
-            {  department_id: { [Op.eq] : 3 }}       
-          ]
-        } 
-    }); 
-
-    let academicPositionPerDept = [
-            {
-                "department" : "Mathermatics",
-                "ผศ.ดร.": staff_mathematics_prof3,
-                "รศ.ดร.": staff_mathematics_prof2,
-                "อ.ดร.": staff_mathematics_prof4,
-                "อ.": staff_mathematics_prof5,
-                "ศ.ดร.": staff_mathematics_prof1,
-            },
-            {
-                "department" : "Physics",
-                "ผศ.ดร.": staff_physics_prof3,
-                "รศ.ดร.": staff_physics_prof2,
-                "อ.ดร.": staff_physics_prof4,
-                "อ.": staff_physics_prof5,
-                "ศ.ดร." : staff_physics_prof1
-            },
-            {
-                "department" : "Biology",
-                "ผศ.ดร.": staff_biology_prof3,
-                "รศ.ดร.": staff_biology_prof2,
-                "อ.ดร.": staff_biology_prof4,
-                "อ.": staff_biology_prof5,
-                "ศ.ดร." : staff_biology_prof1
-            },
-            {
-                "department" : "Chemistry",
-                "ผศ.ดร.": staff_chemistry_prof3,
-                "รศ.ดร.": staff_chemistry_prof2,
-                "อ.ดร.": staff_chemistry_prof4,
-                "อ.": staff_chemistry_prof5,
-                "ศ.ดร." : staff_chemistry_prof1
-            },          
-        ]           
-
-  //  const staff_techcher_all = await staff.count({ where: { stafftype_id: 1 }});
-  //  const staff_employee_all = await staff.count({ where: { stafftype_id: 2 }});
-
-    // นิสิตอยู่ใน dashboard2 — ไม่ query ที่นี่
-    const student_mathematics_count = 0
-    const student_physics_count     = 0
-    const student_biology_count     = 0
-    const student_chemistry_count   = 0
-
-
-    // นับจำนวนอาจารย์
-   const staff_teacher_mathematics = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 1 }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });    
-
-
-   const staff_teacher_physics = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 2 }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });    
-
-
-   const staff_teacher_biology = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 3 }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });  
-    
-   const staff_teacher_chemistry = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 4 }}, 
-            {  stafftype_id: { [Op.eq] : 1 }}       
-          ]
-        } 
-    });      
-
-
-// นับจำนวนพนักงาน (สายสนับสนุน)    
-
-   const staff_employee_mathematics = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 1 }}, 
-            {  stafftype_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });    
-
-   const staff_employee_physics = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 2 }}, 
-            {  stafftype_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });    
-
-
-   const staff_employee_biology = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 3 }}, 
-            {  stafftype_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });  
-    
-   const staff_employee_chemistry = await staff.count({
-        where: {
-          [Op.and]: [
-            {  department_id: { [Op.eq] : 4 }}, 
-            {  stafftype_id: { [Op.eq] : 2 }}       
-          ]
-        } 
-    });  
-
-
-  let academyWorkResult = [
-            {
-                "catalog": "Biology",
-                "academic": `${staff_teacher_biology + staff_employee_biology}`,
-                "student": `${student_biology_count}`,
-                "staff": `${staff_employee_biology}`,
-                "teacher": `${staff_teacher_biology}`,
-            },
-            {
-                "catalog": "Chemistry",
-                "academic": `${staff_teacher_chemistry + staff_employee_chemistry}`,
-                "student": `${student_chemistry_count}`,
-                "staff": `${staff_employee_chemistry}`,
-                "teacher": `${staff_teacher_chemistry}`,
-            },
-            {
-                "catalog": "Physics",
-                "academic": `${staff_teacher_physics + staff_employee_physics}`,
-                "student": `${student_physics_count}`,
-                "staff": `${staff_employee_physics}`,
-                "teacher": `${staff_teacher_physics}`,
-            },
-            {
-                "catalog": "Mathematics",
-                "academic": `${staff_teacher_mathematics + staff_employee_mathematics}`,
-                "student": `${student_mathematics_count}`,
-                "staff": `${staff_employee_mathematics}`,
-                "teacher": `${staff_teacher_mathematics}`,
-            }
-        ]
-
   try {
-    let dashboard = {
-      academicWork: academyWorkResult,
-      academicPosition: academicPositionResult,
-      academicPositionDept: academicPositionPerDept,
+    // KPI
+    var totalTeacher = await Staff.count({ where: { stafftype_id: 1 } })
+    var totalSupport = await Staff.count({ where: { stafftype_id: 2 } })
+    var total = totalTeacher + totalSupport
 
-    }
-
-    if (dashboard) {
-      res.status(200).json({
-        status: 'ok',
-        result: dashboard,
-      })
-    } else {
-      res.status(500).json({
-        status: 'nok',
-      })
-    }
-
-  } catch (error) {
-    res.status(500).json({
-      Error: error.toString(),
+    // บุคลากรแยกตามสังกัด (department_name field ใน Staff)
+    var allStaff = await Staff.findAll({
+      attributes: ['staff_id', 'position_no', 'stafftype_id', 'title_th', 'firstname_th', 'lastname_th', 'position', 'education', 'startdate', 'department_id'],
+      include: [{ model: LeaveRecord, attributes: ['leave_id', 'leave_type', 'start_date', 'end_date'] }],
+      order: [['stafftype_id', 'ASC'], ['firstname_th', 'ASC']],
     })
+
+    // ดึง dept name จาก Department (staff มี department_id FK)
+    var Department = require('../../models/sciences/department')
+    var depts = await Department.findAll({ attributes: ['department_id', 'department_name', 'dept_name'] })
+    var deptMap = {}
+    depts.forEach(function(d) { deptMap[d.department_id] = d.department_name || d.dept_name || '' })
+
+    // staffList พร้อม dept name
+    var staffList = allStaff.map(function(s) {
+      return {
+        staff_id: s.staff_id,
+        position_no: s.position_no || '',
+        status: s.stafftype_id === 1 ? 'อาจารย์' : 'สายสนับสนุน',
+        fullname_th: (s.title_th || '') + (s.firstname_th || '') + ' ' + (s.lastname_th || ''),
+        position: s.position || '',
+        education: s.education || '',
+        dept: deptMap[s.department_id] || '',
+        leaveList: (s.LeaveRecords || []).map(function(l) {
+          return {
+            leave_type: l.leave_type || '',
+            start_date: l.start_date || null,
+            end_date: l.end_date || null,
+          }
+        }),
+      }
+    })
+
+    // staffByDept — group โดย dept name
+    var deptGroupMap = {}
+    staffList.forEach(function(s) {
+      var d = s.dept || 'ไม่ระบุ'
+      if (!deptGroupMap[d]) deptGroupMap[d] = { dept: d, teacher: 0, support: 0, total: 0 }
+      if (s.status === 'อาจารย์') deptGroupMap[d].teacher++
+      else deptGroupMap[d].support++
+      deptGroupMap[d].total++
+    })
+    var staffByDept = Object.values(deptGroupMap)
+
+    // leaveStats — group by leave_type
+    var leaveTypeMap = {}
+    staffList.forEach(function(s) {
+      s.leaveList.forEach(function(l) {
+        var t = l.leave_type || 'ไม่ระบุ'
+        leaveTypeMap[t] = (leaveTypeMap[t] || 0) + 1
+      })
+    })
+    var leaveStats = Object.keys(leaveTypeMap).map(function(t) {
+      return { type: t, count: leaveTypeMap[t] }
+    })
+    var leaveByType = leaveStats.map(function(l) {
+      return { id: l.type, label: l.type, value: l.count }
+    })
+
+    res.json({
+      status: 'ok',
+      result: {
+        kpi: { total: total, teacher: totalTeacher, support: totalSupport },
+        staffByDept: staffByDept,
+        staffList: staffList,
+        leaveStats: leaveStats,
+        leaveByType: leaveByType,
+      }
+    })
+  } catch (e) {
+    res.json({ status: 'nok', result: e.message })
   }
 })
-
 
 module.exports = router

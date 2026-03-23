@@ -105,4 +105,33 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
     }
 })
 
+// POST /api/v2/leaverecord/bulk — bulk insert LeaveRecords matched by position_no → staff_id
+router.post('/bulk', async (req, res) => {
+  try {
+    var records = req.body
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.json({ status: constants.kResultNok, result: 'No data' })
+    }
+    // หา staff_id จาก position_no
+    var posNos = [...new Set(records.map(function(r) { return String(r.position_no || '') }).filter(Boolean))]
+    var staffRows = await Staff.findAll({ where: { position_no: posNos }, attributes: ['staff_id', 'position_no'] })
+    var staffMap = {}
+    staffRows.forEach(function(s) { staffMap[String(s.position_no)] = s.staff_id })
+
+    var toInsert = records.map(function(r) {
+      return {
+        staff_id: staffMap[String(r.position_no)] || null,
+        leave_type: r.leave_type || null,
+        start_date: r.start_date || null,
+        end_date: r.end_date || null,
+      }
+    }).filter(function(r) { return r.staff_id })
+
+    await leaveRecord.bulkCreate(toInsert)
+    res.json({ status: constants.kResultOk, count: toInsert.length })
+  } catch (e) {
+    res.json({ status: constants.kResultNok, result: e.message })
+  }
+})
+
 module.exports = router

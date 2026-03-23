@@ -135,6 +135,22 @@ router.get('/summary', async (req, res) => {
       'ORDER BY award_count DESC, grant_count DESC LIMIT 10',
       { type: QueryTypes.SELECT }
     )
+    // ดึง award + grant details สำหรับ top students
+    var topIds = topStudentRows.map(function(r) { return r.student_id })
+    var awardDetails = []
+    var grantDetails = []
+    if (topIds.length > 0) {
+      var idList = topIds.join(',')
+      awardDetails = await sequelize.query(
+        'SELECT award_id, student_id, award_name, award_level, award_date FROM "StudentAwards" WHERE student_id IN (' + idList + ')',
+        { type: QueryTypes.SELECT }
+      )
+      grantDetails = await sequelize.query(
+        'SELECT grant_id, student_id, grant_name, amount, grant_type FROM "StudentGrants" WHERE student_id IN (' + idList + ')',
+        { type: QueryTypes.SELECT }
+      )
+    }
+
     var topStudents = topStudentRows.map(function(r) {
       return {
         student_id: r.student_id,
@@ -142,6 +158,8 @@ router.get('/summary', async (req, res) => {
         major: r.major_name || '',
         awards: parseInt(r.award_count),
         grants: parseInt(r.grant_count),
+        awardList: awardDetails.filter(function(a) { return String(a.student_id) === String(r.student_id) }),
+        grantList: grantDetails.filter(function(g) { return String(g.student_id) === String(r.student_id) }),
       }
     })
 

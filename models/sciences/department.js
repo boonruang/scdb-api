@@ -9,13 +9,21 @@ const department = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
+    department_code: {
+      type: Sequelize.STRING(20),
+      allowNull: true,
+    },
+    department_name: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
     dept_name: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     dept_type: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

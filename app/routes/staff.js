@@ -194,4 +194,57 @@ router.post('/bulkupdateprofile', JwtMiddleware.checkToken, async (req, res) => 
   }
 })
 
+// POST /api/v2/staff/bulk — upsert by position_no
+router.post('/bulk', async (req, res) => {
+  try {
+    var records = req.body
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.json({ status: constants.kResultNok, result: 'No data' })
+    }
+    var Department = require('../../models/sciences/department')
+    var depts = await Department.findAll({ attributes: ['department_id', 'department_name', 'dept_name'] })
+    var deptMap = {}
+    depts.forEach(function(d) {
+      var name = d.department_name || d.dept_name || ''
+      if (name) deptMap[name] = d.department_id
+    })
+
+    var upserted = 0
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i]
+      var dept_id = deptMap[r.dept] || null
+      var payload = {
+        position_no: r.position_no || null,
+        stafftype_id: r.status === 'อาจารย์' ? 1 : 2,
+        title_th: r.title || null,
+        firstname_th: r.firstname_th || null,
+        lastname_th: r.lastname_th || null,
+        firstname: r.firstname || '',
+        lastname: r.lastname || '',
+        position: r.position || null,
+        education: r.education || null,
+        startdate: r.startdate || null,
+        birthday: r.birthday || null,
+        email: r.email || null,
+        phone_no: r.phone_no || null,
+        department_id: dept_id,
+      }
+      if (r.position_no) {
+        var existing = await staff.findOne({ where: { position_no: String(r.position_no) } })
+        if (existing) {
+          await existing.update(payload)
+        } else {
+          await staff.create(payload)
+        }
+      } else {
+        await staff.create(payload)
+      }
+      upserted++
+    }
+    res.json({ status: constants.kResultOk, count: upserted })
+  } catch (e) {
+    res.json({ status: constants.kResultNok, result: e.message })
+  }
+})
+
 module.exports = router

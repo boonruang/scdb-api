@@ -31,6 +31,7 @@ const StudentGrant = require('../models/sciences/studentGrant');
 const StudentAward = require('../models/sciences/studentAward');
 const StudentActivity = require('../models/sciences/studentActivity');
 const Document = require('../models/sciences/document');
+const Major = require('../models/sciences/major');
 
 
 // =================================================================
@@ -68,6 +69,10 @@ AcademicProgram.hasMany(AdmissionPlan, { foreignKey: 'program_id' });
 Student.hasMany(StudentGrant, { foreignKey: 'student_id' });
 Student.hasMany(StudentAward, { foreignKey: 'student_id' });
 StudentAward.belongsTo(Student, { foreignKey: 'student_id' });
+
+// Major Relationships
+Department.hasMany(Major, { foreignKey: 'department_id' });
+Major.belongsTo(Department, { foreignKey: 'department_id' });
 
 // Project Relationships
 Project.belongsTo(Department, { foreignKey: 'responsible_dept_id' });
@@ -119,7 +124,8 @@ app.use('/api/v2/publicationauthor', require('./routes/publicationAuthor'));
 app.use('/api/v2/studentgrant', require('./routes/studentGrant'));
 app.use('/api/v2/studentaward', require('./routes/studentAward'));
 app.use('/api/v2/studentactivity', require('./routes/studentActivity'));
-app.use('/api/v2/document', require('./routes/document'));
+app.use('/api/v2/document', require('./routes/document'))
+app.use('/api/v2/major', require('./routes/major'));
 app.use('/api/v2/log', require('./routes/log'))
 app.use('/api/v2/user', require('./routes/user'))
 app.use('/api/v2/auth', require('./routes/auth'))
