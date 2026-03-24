@@ -29,11 +29,13 @@ const staff = sequelize.define(
     },
     firstname: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
+      defaultValue: '',
     },
     lastname: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
+      defaultValue: '',
     },
     position: {
       type: Sequelize.STRING,

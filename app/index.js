@@ -9,8 +9,8 @@ const DEFAULT_PORT = process.env.NODE_ENV_SERVICE_PORT
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*'
 app.use(cors({ origin: CORS_ORIGIN }))
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json())
+app.use(express.urlencoded({ extended: false, limit: '10mb' }))
+app.use(express.json({ limit: '10mb' }))
 
 // =================================================================
 // 2. IMPORT MODELS (ส่วนที่เพิ่มเข้ามา)
@@ -32,6 +32,7 @@ const StudentAward = require('../models/sciences/studentAward');
 const StudentActivity = require('../models/sciences/studentActivity');
 const Document = require('../models/sciences/document');
 const Major = require('../models/sciences/major');
+const AuthorProfile = require('../models/sciences/authorProfile');
 
 
 // =================================================================
@@ -53,12 +54,12 @@ Staff.belongsTo(Stafftype, { foreignKey: 'stafftype_id' });
 Staff.hasMany(StaffEducation, { foreignKey: 'staff_id' });
 Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
 Staff.belongsToMany(Project, { through: ProjectStaff, foreignKey: 'staff_id', otherKey: 'project_id' });
-Staff.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'staff_id', otherKey: 'pub_id' });
-// Publication Relationships
-Publication.belongsToMany(Staff, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'staff_id' });
+// Publication Relationships — ใช้ AuthorProfile แทน Staff
+AuthorProfile.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'author_id', otherKey: 'pub_id' });
+Publication.belongsToMany(AuthorProfile, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'author_id' });
 
 PublicationAuthor.belongsTo(Publication, { foreignKey: 'pub_id' });
-PublicationAuthor.belongsTo(Staff, { foreignKey: 'staff_id' });
+PublicationAuthor.belongsTo(AuthorProfile, { foreignKey: 'author_id' });
 
 
 // AcademicProgram Relationships
@@ -126,6 +127,7 @@ app.use('/api/v2/studentaward', require('./routes/studentAward'));
 app.use('/api/v2/studentactivity', require('./routes/studentActivity'));
 app.use('/api/v2/document', require('./routes/document'))
 app.use('/api/v2/major', require('./routes/major'));
+app.use('/api/v2/authorprofile', require('./routes/authorProfile'));
 app.use('/api/v2/log', require('./routes/log'))
 app.use('/api/v2/user', require('./routes/user'))
 app.use('/api/v2/auth', require('./routes/auth'))

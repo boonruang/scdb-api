@@ -12,12 +12,12 @@ const publicationAuthor = sequelize.define(
         key: 'pub_id',
       },
     },
-    staff_id: {
+    author_id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       references: {
-        model: 'Staff',
-        key: 'staff_id',
+        model: 'AuthorProfiles',
+        key: 'author_id',
       },
     },
   },

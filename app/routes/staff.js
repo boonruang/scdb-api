@@ -212,6 +212,8 @@ router.post('/bulk', async (req, res) => {
     var upserted = 0
     for (var i = 0; i < records.length; i++) {
       var r = records[i]
+      // ข้ามแถวที่ไม่มีข้อมูลจริง
+      if (!r.position_no && !r.firstname_th && !r.firstname) continue
       var dept_id = deptMap[r.dept] || null
       var payload = {
         position_no: r.position_no || null,

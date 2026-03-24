@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
 const { Op } = require('sequelize')
-const staff = require('../../models/sciences/staff')
+const AuthorProfile = require('../../models/sciences/authorProfile')
 const publication = require('../../models/sciences/publication')
 const publicationAuthor = require('../../models/sciences/publicationAuthor')
 const constants = require('../../config/constant')
@@ -149,18 +149,18 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
     if (links.length > 0) {
       var authorSpreadsheetIds = links.map(function(l) { return l.author_spreadsheet_id }).filter(Boolean)
       var uniqueAuthorIds = authorSpreadsheetIds.filter(function(v, i, a) { return a.indexOf(v) === i })
-      var staffRows = await staff.findAll({
+      var authorRows = await AuthorProfile.findAll({
         where: { spreadsheet_id: { [Op.in]: uniqueAuthorIds } },
-        attributes: ['staff_id', 'spreadsheet_id']
+        attributes: ['author_id', 'spreadsheet_id']
       })
-      var staffMap = {}
-      staffRows.forEach(function(s) { staffMap[s.spreadsheet_id] = s.staff_id })
+      var authorMap = {}
+      authorRows.forEach(function(a) { authorMap[a.spreadsheet_id] = a.author_id })
 
       var junctions = []
       links.forEach(function(link) {
         var pubId = pubMap[link.pub_spreadsheet_id]
-        var staffId = staffMap[link.author_spreadsheet_id]
-        if (pubId && staffId) junctions.push({ pub_id: pubId, staff_id: staffId })
+        var authorId = authorMap[link.author_spreadsheet_id]
+        if (pubId && authorId) junctions.push({ pub_id: pubId, author_id: authorId })
       })
       if (junctions.length > 0) {
         await publicationAuthor.bulkCreate(junctions, { ignoreDuplicates: true })
