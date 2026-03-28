@@ -33,6 +33,7 @@ const StudentActivity = require('../models/sciences/studentActivity');
 const Document = require('../models/sciences/document');
 const Major = require('../models/sciences/major');
 const AuthorProfile = require('../models/sciences/authorProfile');
+const AcademicResearch = require('../models/sciences/academicResearch');
 
 
 // =================================================================

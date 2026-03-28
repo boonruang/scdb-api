@@ -5,7 +5,7 @@ const { Sequelize } = require('sequelize')
 const AdmissionPlan = require('../../models/sciences/admissionPlan')
 const AcademicProgram = require('../../models/sciences/academicProgram')
 const StudentGrant = require('../../models/sciences/studentGrant')
-const Student = require('../../models/sciences/student')
+const Publication = require('../../models/sciences/publication')
 
 // GET /api/v2/dashboard3/summary?year=2567
 router.get('/summary', async (req, res) => {
@@ -17,7 +17,7 @@ router.get('/summary', async (req, res) => {
     var totalPlan   = planRows.reduce(function(s, r) { return s + (r.planned_seats || 0) }, 0)
     var totalAdmit  = planRows.reduce(function(s, r) { return s + (r.actual_admitted || 0) }, 0)
     var reportPct   = totalPlan > 0 ? Math.round((totalAdmit / totalPlan) * 100) : 0
-    var totalStudent = await Student.count()
+    var totalPublication = await Publication.count()
     var totalGrant   = await StudentGrant.count()
 
     // ── 2. แผนรับ vs รายงานตัว แยกภาควิชา ──────────────────────────────────
@@ -48,9 +48,9 @@ router.get('/summary', async (req, res) => {
       return { year: String(r.academic_year), total: parseInt(r.dataValues.total) || 0 }
     })
 
-    // ── 4. นิสิต แยกตามสาขา (top 5) ─────────────────────────────────────────
+    // ── 4. ผลงานวิจัยสูงสุด แยกสาขา (top 5) จาก AcademicResearch ──────────────
     var majorRows = await sequelize.query(
-      `SELECT major_name, COUNT(*) AS cnt FROM "Students"
+      `SELECT major_name, COUNT(*) AS cnt FROM "AcademicResearch"
        WHERE major_name IS NOT NULL AND major_name != ''
        GROUP BY major_name ORDER BY cnt DESC LIMIT 5`,
       { type: Sequelize.QueryTypes.SELECT }
@@ -59,19 +59,21 @@ router.get('/summary', async (req, res) => {
       return { rank: i + 1, dept: r.major_name, count: parseInt(r.cnt) }
     })
 
-    // ── 5. นิสิตแยกตามภาควิชา (pie) ─────────────────────────────────────────
-    var deptRows = await sequelize.query(
-      `SELECT department_name, COUNT(*) AS cnt FROM "Students"
-       WHERE department_name IS NOT NULL AND department_name != ''
-       GROUP BY department_name ORDER BY cnt DESC`,
+    // ── 5. ผลงานวิจัย แยกระดับ ป.โท/ป.เอก (pie) จาก AcademicResearch ──────────
+    var degreeRows = await sequelize.query(
+      `SELECT degree_level, COUNT(*) AS cnt FROM "AcademicResearch"
+       WHERE degree_level IS NOT NULL AND degree_level != ''
+       GROUP BY degree_level ORDER BY cnt DESC`,
       { type: Sequelize.QueryTypes.SELECT }
     )
-    var total = deptRows.reduce(function(s, r) { return s + parseInt(r.cnt) }, 0)
-    var studentByDept = deptRows.map(function(r) {
+    var degreeTotal = degreeRows.reduce(function(s, r) { return s + parseInt(r.cnt) }, 0)
+    var degreeShort = { 'ปริญญาโท': 'ป.โท', 'ปริญญาเอก': 'ป.เอก' }
+    var studentByDept = degreeRows.map(function(r) {
+      var short = degreeShort[r.degree_level] || r.degree_level
       return {
-        id: r.department_name,
-        label: r.department_name,
-        value: total > 0 ? parseFloat(((parseInt(r.cnt) / total) * 100).toFixed(1)) : 0
+        id: short,
+        label: short,
+        value: degreeTotal > 0 ? parseFloat(((parseInt(r.cnt) / degreeTotal) * 100).toFixed(1)) : 0
       }
     })
 
@@ -109,7 +111,7 @@ router.get('/summary', async (req, res) => {
     res.json({
       status: 'ok',
       result: {
-        kpi: { totalAdmit, totalPlan, reportPct, totalStudent, totalGrant },
+        kpi: { totalAdmit, totalPlan, reportPct, totalPublication, totalGrant },
         admissionByDept,
         admissionTrend,
         studentByDept,

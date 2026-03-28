@@ -32,7 +32,7 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-const result = await publication.findAll({
+    const result = await publication.findAll({
       attributes: [
         ['pub_id', 'id'],
         'pub_id',
@@ -44,12 +44,13 @@ const result = await publication.findAll({
       ],
       include: [
         {
-          model: staff,
-          through: { attributes: [] }, // ซ่อนข้อมูลตารางกลาง PublicationAuthor
-          attributes: ['staff_id', 'firstname', 'lastname', 'position'] // เลือกฟิลด์ที่ต้องการแสดงของ author
+          model: AuthorProfile,
+          through: { attributes: [] },
+          attributes: ['author_id', 'firstname_th', 'lastname_th', 'firstname', 'lastname']
         }
-      ]
-    });    
+      ],
+      order: [['pub_id', 'DESC']]
+    })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
