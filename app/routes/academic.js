@@ -248,17 +248,17 @@ router.post('/admission/bulk', async (req, res) => {
     var count = 0
     for (var i = 0; i < records.length; i++) {
       var r = records[i]
-      if (!r.major_name && !r.dept_name) continue
+      if (!r.major_name || !String(r.major_name).trim()) continue
 
-      // find program by name
-      var prog = await AcademicProgram.findOne({ where: { program_name: r.major_name } })
-      if (!prog) {
-        prog = await AcademicProgram.create({
-          program_name: r.major_name,
-          program_type: r.level || null,
+      // find or create AcademicProgram by program_name (avoid duplicate on re-import)
+      var majorName = String(r.major_name).trim()
+      var [prog] = await AcademicProgram.findOrCreate({
+        where: { program_name: majorName },
+        defaults: {
+          program_type: r.level ? String(r.level).trim() : null,
           department_id: null,
-        })
-      }
+        }
+      })
 
       // upsert by program_id + academic_year
       var existing = await AdmissionPlan.findOne({
