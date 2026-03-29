@@ -104,7 +104,9 @@ router.get('/summary', async (req, res) => {
     })
     var recentGrantList = recentGrants.map(function(r) {
       return {
+        student_code: r.student_code || '',
         name: (r.firstname || '') + ' ' + (r.lastname || ''),
+        program: r.program || '',
         major: r.major_name || '',
         grant: r.grant_name || '',
       }
