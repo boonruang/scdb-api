@@ -253,28 +253,23 @@ router.post('/admission/bulk', async (req, res) => {
       var r = records[i]
       if (!r.major_name || !String(r.major_name).trim()) continue
 
-      // find or create AcademicProgram by program_name (avoid duplicate on re-import)
+      // find or create AcademicProgram by program_name + degree_level (สาขาเดียวกันต่างระดับถือเป็นคนละ record)
       var majorName = String(r.major_name).trim()
+      var degreeLevel = r.level ? String(r.level).trim() : null
       var [prog] = await AcademicProgram.findOrCreate({
-        where: { program_name: majorName },
-        defaults: {
-          degree_level: r.level ? String(r.level).trim() : null,
-          department_id: null,
-        }
+        where: { program_name: majorName, degree_level: degreeLevel },
+        defaults: { department_id: null }
       })
-      // update degree_level ถ้า record มีอยู่แล้วแต่ยังว่าง
-      if (r.level && !prog.degree_level) {
-        await prog.update({ degree_level: String(r.level).trim() })
-      }
 
-      // upsert by program_id + academic_year
+      // upsert by program_id + academic_year + group_name
+      var groupName = r.group ? String(r.group).trim() : null
       var existing = await AdmissionPlan.findOne({
-        where: { program_id: prog.program_id, academic_year: r.academic_year }
+        where: { program_id: prog.program_id, academic_year: r.academic_year, group_name: groupName }
       })
       var planData = {
         planned_seats: r.planned_seats != null ? parseInt(r.planned_seats) : null,
         actual_admitted: r.actual_admitted != null ? parseInt(r.actual_admitted) : null,
-        group_name: r.group ? String(r.group).trim() : null,
+        group_name: groupName,
         eligible_count: r.eligible != null ? parseInt(r.eligible) : null,
         admit_pct: r.admit_pct != null ? parseFloat(r.admit_pct) : null,
       }
