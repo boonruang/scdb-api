@@ -4,7 +4,7 @@ const sequelize = require('../../config/db-instance')
 const { Sequelize } = require('sequelize')
 const AdmissionPlan = require('../../models/sciences/admissionPlan')
 const AcademicProgram = require('../../models/sciences/academicProgram')
-const StudentGrant = require('../../models/sciences/studentGrant')
+const AcademicGrant = require('../../models/sciences/academicGrant')
 const Publication = require('../../models/sciences/publication')
 
 // GET /api/v2/dashboard3/summary?year=2567
@@ -23,7 +23,7 @@ router.get('/summary', async (req, res) => {
       { type: Sequelize.QueryTypes.SELECT }
     )
     var totalPublication = parseInt((totalPublicationRows[0] || {}).cnt || 0)
-    var totalGrant   = await StudentGrant.count({ where: { grant_type: ['ในประเทศ', 'ต่างประเทศ'] } })
+    var totalGrant   = await AcademicGrant.count()
 
     // ── 2. แผนรับ vs รายงานตัว แยกภาควิชา ──────────────────────────────────
     var apRows = await AdmissionPlan.findAll({
@@ -84,8 +84,8 @@ router.get('/summary', async (req, res) => {
 
     // ── 6. ทุนนำเสนอ แยกประเภท ───────────────────────────────────────────────
     var grantRows = await sequelize.query(
-      `SELECT grant_type, COUNT(*) AS cnt FROM "StudentGrants"
-       WHERE grant_type IN ('ในประเทศ', 'ต่างประเทศ') GROUP BY grant_type ORDER BY cnt DESC`,
+      `SELECT grant_type, COUNT(*) AS cnt FROM "AcademicGrants"
+       WHERE grant_type IS NOT NULL GROUP BY grant_type ORDER BY cnt DESC`,
       { type: Sequelize.QueryTypes.SELECT }
     )
     var grantTotal = grantRows.reduce(function(s, r) { return s + parseInt(r.cnt) }, 0)
@@ -98,14 +98,10 @@ router.get('/summary', async (req, res) => {
     })
 
     // ── 7. รายชื่อนิสิตได้รับทุนล่าสุด ───────────────────────────────────────
-    var recentGrants = await sequelize.query(
-      `SELECT s.firstname, s.lastname, s.major_name, g.grant_name
-       FROM "StudentGrants" g
-       JOIN "Students" s ON g.student_id = s.student_id
-       WHERE g.grant_type IN ('ในประเทศ', 'ต่างประเทศ')
-       ORDER BY g.grant_id DESC LIMIT 5`,
-      { type: Sequelize.QueryTypes.SELECT }
-    )
+    var recentGrants = await AcademicGrant.findAll({
+      order: [['grant_id', 'DESC']],
+      limit: 5,
+    })
     var recentGrantList = recentGrants.map(function(r) {
       return {
         name: (r.firstname || '') + ' ' + (r.lastname || ''),

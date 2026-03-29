@@ -119,6 +119,7 @@ app.use('/api/v2/staff', require('./routes/staff'));
 app.use('/api/v2/staffeducation', require('./routes/staffEducation'));
 app.use('/api/v2/leaverecord', require('./routes/leaveRecord'));
 app.use('/api/v2/academicprogram', require('./routes/academicProgram'));
+app.use('/api/v2/academicgrant',  require('./routes/academicGrant'));
 app.use('/api/v2/student', require('./routes/student'));
 app.use('/api/v2/stafftype', require('./routes/stafftype'));
 app.use('/api/v2/admissionplan', require('./routes/admissionPlan'));

@@ -5,7 +5,6 @@ const { Sequelize, Op } = require('sequelize')
 const AdmissionPlan = require('../../models/sciences/admissionPlan')
 const AcademicProgram = require('../../models/sciences/academicProgram')
 const Student = require('../../models/sciences/student')
-const StudentGrant = require('../../models/sciences/studentGrant')
 const AcademicResearch = require('../../models/sciences/academicResearch')
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -156,88 +155,6 @@ router.delete('/research/:id', async (req, res) => {
     if (!row) return res.json({ status: 'nok', result: 'Not found' })
     await row.destroy()
     res.json({ status: 'ok', result: 'deleted' })
-  } catch (e) { res.json({ status: 'nok', result: e.message }) }
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GRANT CRUD (ทุนนำเสนอ)
-// ─────────────────────────────────────────────────────────────────────────────
-router.get('/grant/list', async (req, res) => {
-  try {
-    var rows = await sequelize.query(
-      `SELECT g.grant_id AS id, g.grant_id, g.grant_name, g.conference_name, g.amount, g.grant_type, g.grant_source,
-              s."studentOfficial_id" AS student_code, s.firstname, s.lastname, s.major_name
-       FROM "StudentGrants" g
-       LEFT JOIN "Students" s ON g.student_id = s.student_id
-       ORDER BY g.grant_id DESC`,
-      { type: Sequelize.QueryTypes.SELECT }
-    )
-    res.json({ status: 'ok', result: rows })
-  } catch (e) { res.json({ status: 'nok', result: e.message }) }
-})
-
-router.get('/grant/:id', async (req, res) => {
-  try {
-    var rows = await sequelize.query(
-      `SELECT g.*, s."studentOfficial_id" AS student_code, s.firstname, s.lastname, s.major_name
-       FROM "StudentGrants" g LEFT JOIN "Students" s ON g.student_id = s.student_id
-       WHERE g.grant_id = :id`,
-      { replacements: { id: req.params.id }, type: Sequelize.QueryTypes.SELECT }
-    )
-    if (!rows.length) return res.json({ status: 'nok', result: 'Not found' })
-    res.json({ status: 'ok', result: rows[0] })
-  } catch (e) { res.json({ status: 'nok', result: e.message }) }
-})
-
-router.delete('/grant/:id', async (req, res) => {
-  try {
-    var row = await StudentGrant.findByPk(req.params.id)
-    if (!row) return res.json({ status: 'nok', result: 'Not found' })
-    await row.destroy()
-    res.json({ status: 'ok', result: 'deleted' })
-  } catch (e) { res.json({ status: 'nok', result: e.message }) }
-})
-
-router.post('/grant', async (req, res) => {
-  try {
-    var r = req.body
-    // find or create student by student_code
-    var student = await Student.findOne({ where: { studentOfficial_id: String(r.student_code || '') } })
-    if (!student) {
-      student = await Student.create({
-        studentOfficial_id: String(r.student_code || ''),
-        firstname: r.firstname || '',
-        lastname: r.lastname || '',
-        major_name: r.major_name || null,
-        department_name: null,
-        entry_year: null,
-      })
-    }
-    var row = await StudentGrant.create({
-      student_id: student.student_id,
-      grant_name: r.grant_name || null,
-      conference_name: r.conference_name || null,
-      amount: r.amount || null,
-      grant_type: r.grant_type || null,
-      grant_source: r.grant_source || null,
-    })
-    res.json({ status: 'ok', result: row })
-  } catch (e) { res.json({ status: 'nok', result: e.message }) }
-})
-
-router.put('/grant/:id', async (req, res) => {
-  try {
-    var row = await StudentGrant.findByPk(req.params.id)
-    if (!row) return res.json({ status: 'nok', result: 'Not found' })
-    var r = req.body
-    await row.update({
-      grant_name: r.grant_name || null,
-      conference_name: r.conference_name || null,
-      amount: r.amount || null,
-      grant_type: r.grant_type || null,
-      grant_source: r.grant_source || null,
-    })
-    res.json({ status: 'ok', result: row })
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
