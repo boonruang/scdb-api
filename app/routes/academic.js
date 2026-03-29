@@ -262,6 +262,10 @@ router.post('/admission/bulk', async (req, res) => {
           department_id: null,
         }
       })
+      // update degree_level ถ้า record มีอยู่แล้วแต่ยังว่าง
+      if (r.level && !prog.degree_level) {
+        await prog.update({ degree_level: String(r.level).trim() })
+      }
 
       // upsert by program_id + academic_year
       var existing = await AdmissionPlan.findOne({
