@@ -108,7 +108,7 @@ router.get('/summary', async (req, res) => {
         name: (r.firstname || '') + ' ' + (r.lastname || ''),
         program: r.program || '',
         major: r.major_name || '',
-        grant: r.grant_name || '',
+        grant: r.topic || r.grant_name || '',
       }
     })
 

@@ -16,6 +16,7 @@ const AcademicGrant = sequelize.define(
     lastname:     { type: Sequelize.STRING, allowNull: true },
     program:      { type: Sequelize.STRING, allowNull: true },
     major_name:   { type: Sequelize.STRING, allowNull: true },
+    topic:        { type: Sequelize.STRING, allowNull: true },
     grant_name:   { type: Sequelize.STRING, allowNull: true },
     conference_name: { type: Sequelize.STRING, allowNull: true },
     amount:       { type: Sequelize.FLOAT,  allowNull: true },
