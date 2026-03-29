@@ -29,14 +29,27 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
 //  @access             Private
 router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
   try {
-    let result = await admissionPlan.findAll(
-      {
-      include: [
-        {model: AcademicPrograms},
-      ],     
-      attributes: [ ['plan_id', 'id'], 'plan_id', 'academic_year','planned_seats','actual_admitted' ]  
+    var year = req.query.year ? parseInt(req.query.year) : null
+    var where = year ? { academic_year: year } : {}
+    var rows = await admissionPlan.findAll({
+      where,
+      include: [{ model: AcademicPrograms, attributes: ['program_name', 'degree_level'] }],
+      order: [['academic_year', 'DESC'], ['plan_id', 'ASC']],
+    })
+    var result = rows.map(function(r) {
+      return {
+        id: r.plan_id, plan_id: r.plan_id,
+        academic_year: r.academic_year,
+        program_name: r.AcademicPrograms ? r.AcademicPrograms.program_name : '',
+        degree_level: r.AcademicPrograms ? r.AcademicPrograms.degree_level : '',
+        planned_seats: r.planned_seats,
+        actual_admitted: r.actual_admitted,
+        group_name: r.group_name,
+        eligible_count: r.eligible_count,
+        admit_pct: r.admit_pct,
+        program_id: r.program_id,
       }
-    )    
+    })
     res.json({ status: constants.kResultOk, result: result })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
