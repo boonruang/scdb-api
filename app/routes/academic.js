@@ -258,7 +258,7 @@ router.post('/admission/bulk', async (req, res) => {
       var [prog] = await AcademicProgram.findOrCreate({
         where: { program_name: majorName },
         defaults: {
-          program_type: r.level ? String(r.level).trim() : null,
+          degree_level: r.level ? String(r.level).trim() : null,
           department_id: null,
         }
       })
