@@ -13,6 +13,7 @@ const academicProgram = sequelize.define(
     program_name: {
       type: Sequelize.STRING,
       allowNull: false,
+      unique: false,
     },
     degree_level: {
       type: Sequelize.STRING,
