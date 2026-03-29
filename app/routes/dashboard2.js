@@ -125,14 +125,14 @@ router.get('/summary', async (req, res) => {
 
     // ── Top นิสิต ─────────────────────────────────────────────────────
     var topStudentRows = await sequelize.query(
-      'SELECT s.student_id, s.firstname, s.lastname, s.major_name, ' +
+      'SELECT s.student_id, s."studentOfficial_id", s.firstname, s.lastname, s.major_name, ' +
       'COUNT(DISTINCT a.award_id) AS award_count, COUNT(DISTINCT g.grant_id) AS grant_count ' +
       'FROM "Students" s ' +
       'LEFT JOIN "StudentAwards" a ON a.student_id = s.student_id ' +
       'LEFT JOIN "StudentGrants" g ON g.student_id = s.student_id ' +
-      'GROUP BY s.student_id, s.firstname, s.lastname, s.major_name ' +
+      'GROUP BY s.student_id, s."studentOfficial_id", s.firstname, s.lastname, s.major_name ' +
       'HAVING COUNT(DISTINCT a.award_id) > 0 OR COUNT(DISTINCT g.grant_id) > 0 ' +
-      'ORDER BY award_count DESC, grant_count DESC LIMIT 10',
+      'ORDER BY award_count DESC, grant_count DESC',
       { type: QueryTypes.SELECT }
     )
     // ดึง award + grant details สำหรับ top students
@@ -154,6 +154,7 @@ router.get('/summary', async (req, res) => {
     var topStudents = topStudentRows.map(function(r) {
       return {
         student_id: r.student_id,
+        student_code: r.studentOfficial_id || r['studentOfficial_id'] || '',
         name: (r.firstname || '') + ' ' + (r.lastname || ''),
         major: r.major_name || '',
         awards: parseInt(r.award_count),

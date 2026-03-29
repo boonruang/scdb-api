@@ -60,12 +60,10 @@ const staff = sequelize.define(
     department_id: {
       type: Sequelize.INTEGER,
       allowNull: true,
-      references: { model: 'Departments', key: 'department_id' },
     },
     stafftype_id: {
       type: Sequelize.INTEGER,
       allowNull: true,
-      references: { model: 'Stafftype', key: 'stafftype_id' },
     },
     email: {
       type: Sequelize.STRING,

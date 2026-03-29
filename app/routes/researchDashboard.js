@@ -53,10 +53,18 @@ router.get('/summary', async (req, res) => {
     )
     const publishingTeachers = parseInt(pubTeacherResult[0].cnt) || 0
 
-    // ── 2. scopusByYear (5 ปีย้อนหลัง) ──────────────────────────────────────
+    // ── 2. scopusByYear (เฉพาะปีที่มีข้อมูล) ──────────────────────────────────
+
+    const yearRows = await publication.findAll({
+      attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('publication_year')), 'yr']],
+      where: { publication_year: { [Sequelize.Op.ne]: null } },
+      order: [[Sequelize.col('publication_year'), 'ASC']],
+      raw: true
+    })
+    const distinctYears = yearRows.map(r => r.yr).filter(y => y != null)
 
     const scopusByYear = await Promise.all(
-      Array.from({ length: 5 }, (_, i) => ceYear - 4 + i).map(async (yr) => {
+      distinctYears.map(async (yr) => {
         const pubs = await publication.count({ where: { publication_year: yr } })
 
         const teachersResult = await sequelize.query(
@@ -94,16 +102,28 @@ router.get('/summary', async (req, res) => {
 
     // ── 4. byDept ────────────────────────────────────────────────────────────
 
-    const deptRows = await sequelize.query(
-      `SELECT a.dept_name, COUNT(DISTINCT pa.pub_id) AS cnt
+    // ลองดึงจาก AuthorProfiles ก่อน ถ้าไม่มีข้อมูล fallback ดึงจาก Publications.department
+    let deptRows = await sequelize.query(
+      `SELECT COALESCE(a.dept_name, 'ไม่ระบุ') AS dept_name, COUNT(DISTINCT pa.pub_id) AS cnt
        FROM "PublicationAuthors" pa
        JOIN "Publications" p      ON pa.pub_id = p.pub_id
        JOIN "AuthorProfiles" a    ON pa.author_id = a.author_id
-       WHERE p.publication_year = :year AND a.dept_name IS NOT NULL
-       GROUP BY a.dept_name
+       WHERE p.publication_year = :year
+       GROUP BY COALESCE(a.dept_name, 'ไม่ระบุ')
        ORDER BY cnt DESC`,
       { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
     )
+
+    if (deptRows.length === 0) {
+      deptRows = await sequelize.query(
+        `SELECT COALESCE(p.department, 'ไม่ระบุ') AS dept_name, COUNT(p.pub_id) AS cnt
+         FROM "Publications" p
+         WHERE p.publication_year = :year
+         GROUP BY COALESCE(p.department, 'ไม่ระบุ')
+         ORDER BY cnt DESC`,
+        { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
+      )
+    }
 
     const deptTotal = deptRows.reduce((sum, r) => sum + parseInt(r.cnt), 0)
     const byDept = deptRows.map(r => ({
