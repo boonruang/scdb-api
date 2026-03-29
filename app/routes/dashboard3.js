@@ -17,7 +17,12 @@ router.get('/summary', async (req, res) => {
     var totalPlan   = planRows.reduce(function(s, r) { return s + (r.planned_seats || 0) }, 0)
     var totalAdmit  = planRows.reduce(function(s, r) { return s + (r.actual_admitted || 0) }, 0)
     var reportPct   = totalPlan > 0 ? Math.round((totalAdmit / totalPlan) * 100) : 0
-    var totalPublication = await Publication.count()
+    var totalPublicationRows = await sequelize.query(
+      `SELECT COUNT(*) AS cnt FROM "AcademicResearch"
+       WHERE degree_level IN ('ปริญญาโท', 'ปริญญาเอก')`,
+      { type: Sequelize.QueryTypes.SELECT }
+    )
+    var totalPublication = parseInt((totalPublicationRows[0] || {}).cnt || 0)
     var totalGrant   = await StudentGrant.count()
 
     // ── 2. แผนรับ vs รายงานตัว แยกภาควิชา ──────────────────────────────────
