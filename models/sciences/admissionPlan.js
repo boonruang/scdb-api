@@ -27,6 +27,15 @@ const admissionPlan = sequelize.define(
     actual_admitted: {
       type: Sequelize.INTEGER,
     },
+    group_name: {
+      type: Sequelize.STRING,
+    },
+    eligible_count: {
+      type: Sequelize.INTEGER,
+    },
+    admit_pct: {
+      type: Sequelize.FLOAT,
+    },
   },
   {
     timestamps: false,

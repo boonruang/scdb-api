@@ -17,7 +17,7 @@ router.get('/admission/list', async (req, res) => {
     var where = year ? { academic_year: year } : {}
     var rows = await AdmissionPlan.findAll({
       where,
-      include: [{ model: AcademicProgram, attributes: ['program_name', 'program_type'] }],
+      include: [{ model: AcademicProgram, attributes: ['program_name', 'degree_level'] }],
       order: [['academic_year', 'DESC'], ['plan_id', 'ASC']],
     })
     var result = rows.map(function(r) {
@@ -25,9 +25,12 @@ router.get('/admission/list', async (req, res) => {
         id: r.plan_id, plan_id: r.plan_id,
         academic_year: r.academic_year,
         program_name: r.AcademicProgram ? r.AcademicProgram.program_name : '',
-        program_type: r.AcademicProgram ? r.AcademicProgram.program_type : '',
+        degree_level: r.AcademicProgram ? r.AcademicProgram.degree_level : '',
         planned_seats: r.planned_seats,
         actual_admitted: r.actual_admitted,
+        group_name: r.group_name,
+        eligible_count: r.eligible_count,
+        admit_pct: r.admit_pct,
         program_id: r.program_id,
       }
     })
@@ -38,7 +41,7 @@ router.get('/admission/list', async (req, res) => {
 router.get('/admission/:id', async (req, res) => {
   try {
     var row = await AdmissionPlan.findByPk(req.params.id, {
-      include: [{ model: AcademicProgram, attributes: ['program_name', 'program_type'] }]
+      include: [{ model: AcademicProgram, attributes: ['program_name', 'degree_level'] }]
     })
     if (!row) return res.json({ status: 'nok', result: 'Not found' })
     res.json({ status: 'ok', result: row })
@@ -264,18 +267,17 @@ router.post('/admission/bulk', async (req, res) => {
       var existing = await AdmissionPlan.findOne({
         where: { program_id: prog.program_id, academic_year: r.academic_year }
       })
+      var planData = {
+        planned_seats: r.planned_seats != null ? parseInt(r.planned_seats) : null,
+        actual_admitted: r.actual_admitted != null ? parseInt(r.actual_admitted) : null,
+        group_name: r.group ? String(r.group).trim() : null,
+        eligible_count: r.eligible != null ? parseInt(r.eligible) : null,
+        admit_pct: r.admit_pct != null ? parseFloat(r.admit_pct) : null,
+      }
       if (existing) {
-        await existing.update({
-          planned_seats: r.planned_seats,
-          actual_admitted: r.actual_admitted,
-        })
+        await existing.update(planData)
       } else {
-        await AdmissionPlan.create({
-          program_id: prog.program_id,
-          academic_year: r.academic_year,
-          planned_seats: r.planned_seats,
-          actual_admitted: r.actual_admitted,
-        })
+        await AdmissionPlan.create(Object.assign({ program_id: prog.program_id, academic_year: r.academic_year }, planData))
       }
       count++
     }
