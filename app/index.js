@@ -66,6 +66,7 @@ PublicationAuthor.belongsTo(AuthorProfile, { foreignKey: 'author_id' });
 // AcademicProgram Relationships
 AcademicProgram.belongsTo(Department, { foreignKey: 'department_id' });
 AcademicProgram.hasMany(AdmissionPlan, { foreignKey: 'program_id' });
+AdmissionPlan.belongsTo(AcademicProgram, { foreignKey: 'program_id' });
 
 // Student Relationships
 Student.hasMany(StudentGrant, { foreignKey: 'student_id' });

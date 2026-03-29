@@ -40,8 +40,8 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       return {
         id: r.plan_id, plan_id: r.plan_id,
         academic_year: r.academic_year,
-        program_name: r.AcademicPrograms ? r.AcademicPrograms.program_name : '',
-        degree_level: r.AcademicPrograms ? r.AcademicPrograms.degree_level : '',
+        program_name: r.AcademicProgram ? r.AcademicProgram.program_name : '',
+        degree_level: r.AcademicProgram ? r.AcademicProgram.degree_level : '',
         planned_seats: r.planned_seats,
         actual_admitted: r.actual_admitted,
         group_name: r.group_name,
