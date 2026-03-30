@@ -34,6 +34,7 @@ const Document = require('../models/sciences/document');
 const Major = require('../models/sciences/major');
 const ResearchAuthor = require('../models/sciences/researchAuthor');
 const AcademicResearch = require('../models/sciences/academicResearch');
+const Division = require('../models/sciences/division');
 
 
 // =================================================================
@@ -48,6 +49,10 @@ Department.hasMany(Staff, { foreignKey: 'department_id', constraints: false });
 Department.hasMany(AcademicProgram, { foreignKey: 'department_id' });
 Department.hasMany(Project, { foreignKey: 'responsible_dept_id' });
 Department.hasMany(Document, { foreignKey: 'department_id' });
+
+// Division Relationships
+Division.hasMany(Staff, { foreignKey: 'division_id', constraints: false });
+Staff.belongsTo(Division, { foreignKey: 'division_id', constraints: false });
 
 // Staff Relationships
 Staff.belongsTo(Department, { foreignKey: 'department_id', constraints: false });
@@ -115,6 +120,7 @@ app.use('/api/v2/role', require('./routes/role'))
 
 // --- โปรเจคใหม่ (คณะวิทย์) ---
 app.use('/api/v2/department', require('./routes/department'));
+app.use('/api/v2/division', require('./routes/division'));
 app.use('/api/v2/staff', require('./routes/staff'));
 app.use('/api/v2/staffeducation', require('./routes/staffEducation'));
 app.use('/api/v2/leaverecord', require('./routes/leaveRecord'));
@@ -153,9 +159,9 @@ app.listen(PORT, () => {
 sequelize.sync({ alter: true }).then(async () => {
   console.log('✅ Database & tables synced!');
 
-  // ── Seed: Departments + assign Staff ────────────────────────────
+  // ── Seed: Divisions (สังกัดบุคลากร) ─────────────────────────────
   try {
-    var DEPT_SEEDS = [
+    var DIV_SEEDS = [
       'ภาควิชาคณิตศาสตร์',
       'ภาควิชาชีววิทยา',
       'ภาควิชาฟิสิกส์',
@@ -163,26 +169,15 @@ sequelize.sync({ alter: true }).then(async () => {
       'สำนักงานเลขานุการ',
       'โครงการ วมว.',
     ]
-    var deptMap = {}
-    for (var i = 0; i < DEPT_SEEDS.length; i++) {
-      var name = DEPT_SEEDS[i]
-      var result = await Department.findOrCreate({
-        where: { dept_name: name },
-        defaults: { department_name: name, dept_name: name }
+    for (var si = 0; si < DIV_SEEDS.length; si++) {
+      await Division.findOrCreate({
+        where: { division_name: DIV_SEEDS[si] },
+        defaults: { division_name: DIV_SEEDS[si] }
       })
-      deptMap[name] = result[0].department_id
     }
-    console.log('✅ Departments seeded:', JSON.stringify(deptMap))
-
-    // assign Staff ตาม stafftype: stafftype_id=1 → อาจารย์ (ไม่ชัดว่าสังกัดไหน ใช้ชื่อจริงถ้ามี)
-    // Staff ที่ department_id = null → assign สำนักงานเลขานุการ
-    var fixed = await Staff.update(
-      { department_id: deptMap['สำนักงานเลขานุการ'] },
-      { where: { department_id: null } }
-    )
-    if (fixed[0] > 0) console.log('✅ Assigned ' + fixed[0] + ' null-dept staff to สำนักงานเลขานุการ')
+    console.log('✅ Divisions seeded')
   } catch (e) {
-    console.error('Seed Departments error:', e.message)
+    console.error('Seed Divisions error:', e.message)
   }
   // ─────────────────────────────────────────────────────────────────
 

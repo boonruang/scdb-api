@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const Staff = require('../../models/sciences/staff')
 const LeaveRecord = require('../../models/sciences/leaveRecord')
+const Division = require('../../models/sciences/division')
 const { Op } = require('sequelize')
 
 // GET /api/v2/dashboard/list
@@ -27,18 +28,15 @@ router.get('/list', async (req, res) => {
 
     // ดึง Staff ทั้งหมด + LeaveRecord filter ตามปี
     var allStaff = await Staff.findAll({
-      attributes: ['staff_id', 'position_no', 'stafftype_id', 'title_th', 'firstname_th', 'lastname_th', 'position', 'education', 'startdate', 'department_id'],
-      include: [{ model: LeaveRecord, attributes: ['leave_id', 'leave_type', 'start_date', 'end_date'], where: Object.keys(leaveWhere).length ? leaveWhere : undefined, required: false }],
+      attributes: ['staff_id', 'position_no', 'stafftype_id', 'title_th', 'firstname_th', 'lastname_th', 'position', 'education', 'startdate', 'division_id'],
+      include: [
+        { model: LeaveRecord, attributes: ['leave_id', 'leave_type', 'start_date', 'end_date'], where: Object.keys(leaveWhere).length ? leaveWhere : undefined, required: false },
+        { model: Division, attributes: ['division_id', 'division_name'], required: false },
+      ],
       order: [['stafftype_id', 'ASC'], ['firstname_th', 'ASC']],
     })
 
-    // ดึง dept name จาก Department (staff มี department_id FK)
-    var Department = require('../../models/sciences/department')
-    var depts = await Department.findAll({ attributes: ['department_id', 'department_name', 'dept_name'] })
-    var deptMap = {}
-    depts.forEach(function(d) { deptMap[d.department_id] = d.department_name || d.dept_name || '' })
-
-    // staffList พร้อม dept name
+    // staffList พร้อม division name
     var staffList = allStaff.map(function(s) {
       return {
         staff_id: s.staff_id,
@@ -47,7 +45,7 @@ router.get('/list', async (req, res) => {
         fullname_th: (s.title_th || '') + (s.firstname_th || '') + ' ' + (s.lastname_th || ''),
         position: s.position || '',
         education: s.education || '',
-        dept: deptMap[s.department_id] || '',
+        dept: (s.Division || {}).division_name || '',
         leaveList: (s.LeaveRecords || []).map(function(l) {
           return {
             leave_type: l.leave_type || '',

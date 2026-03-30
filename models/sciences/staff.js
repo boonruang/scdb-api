@@ -61,6 +61,10 @@ const staff = sequelize.define(
       type: Sequelize.INTEGER,
       allowNull: true,
     },
+    division_id: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
     stafftype_id: {
       type: Sequelize.INTEGER,
       allowNull: true,

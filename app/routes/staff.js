@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const staff = require('../../models/sciences/staff')
 const Departments = require('../../models/sciences/department')
+const Division = require('../../models/sciences/division')
 const Stafftype = require('../../models/sciences/stafftype')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
@@ -11,11 +12,12 @@ const formidable = require('formidable')
 //  @desc               Add staff using formidable
 //  @access             Private
 const STAFF_ALLOWED_FIELDS = [
-  'stafftype_id', 'department_id', 'position_no',
+  'stafftype_id', 'department_id', 'division_id', 'position_no',
   'title_th', 'firstname_th', 'lastname_th',
   'firstname', 'lastname', 'position', 'education',
   'startdate', 'birthday', 'email', 'phone_no', 'office_location',
 ]
+const INTEGER_FIELDS = ['stafftype_id', 'department_id', 'division_id']
 
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   try {
@@ -24,7 +26,7 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
       if (error) {
         return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
       }
-      const INTEGER_FIELDS = ['stafftype_id', 'department_id']
+      // INTEGER_FIELDS defined at module level
       const allowed = {}
       STAFF_ALLOWED_FIELDS.forEach(f => {
         if (fields[f] === undefined) return
@@ -56,10 +58,11 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: Departments},
         {model: Stafftype},
-      ],     
+        {model: Division},
+      ],
       attributes: [
         ['staff_id', 'id'], 'staff_id', 'spreadsheet_id',
-        'stafftype_id', 'department_id',
+        'stafftype_id', 'department_id', 'division_id',
         'position_no', 'title_th',
         'firstname_th', 'lastname_th',
         'firstname', 'lastname',
@@ -94,6 +97,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: Departments},
         {model: Stafftype},
+        {model: Division},
       ],
       attributes: [
         ['staff_id', 'id'], 'staff_id', 'spreadsheet_id',
@@ -135,7 +139,7 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
             if (error) {
                 return res.json({ result: constants.kResultNok, message: JSON.stringify(error) }) 
             }
-            const INTEGER_FIELDS = ['stafftype_id', 'department_id']
+            // INTEGER_FIELDS defined at module level
             const allowed = {}
             STAFF_ALLOWED_FIELDS.forEach(f => {
               if (fields[f] === undefined) return
@@ -223,20 +227,29 @@ router.post('/bulk', async (req, res) => {
     if (!Array.isArray(records) || records.length === 0) {
       return res.json({ status: constants.kResultNok, result: 'No data' })
     }
-    var Department = require('../../models/sciences/department')
-    var depts = await Department.findAll({ attributes: ['department_id', 'department_name', 'dept_name'] })
-    var deptMap = {}
-    depts.forEach(function(d) {
-      var name = d.department_name || d.dept_name || ''
-      if (name) deptMap[name] = d.department_id
-    })
+    var Division = require('../../models/sciences/division')
+    var divs = await Division.findAll({ attributes: ['division_id', 'division_name'] })
+    var divMap = {}
+    divs.forEach(function(d) { if (d.division_name) divMap[d.division_name] = d.division_id })
+
+    // auto-create divisions ที่มีใน Excel แต่ยังไม่มีใน DB
+    var uniqueDivs = [...new Set(records.map(function(r) { return r.dept || '' }).filter(Boolean))]
+    for (var di = 0; di < uniqueDivs.length; di++) {
+      var dname = uniqueDivs[di]
+      if (!divMap[dname]) {
+        var created = await Division.findOrCreate({
+          where: { division_name: dname },
+          defaults: { division_name: dname }
+        })
+        divMap[dname] = created[0].division_id
+      }
+    }
 
     var upserted = 0
     for (var i = 0; i < records.length; i++) {
       var r = records[i]
-      // ข้ามแถวที่ไม่มีข้อมูลจริง
       if (!r.position_no && !r.firstname_th && !r.firstname) continue
-      var dept_id = deptMap[r.dept] || null
+      var div_id = divMap[r.dept] || null
       var payload = {
         position_no: r.position_no || null,
         stafftype_id: r.status === 'อาจารย์' ? 1 : 2,
@@ -251,7 +264,7 @@ router.post('/bulk', async (req, res) => {
         birthday: r.birthday || null,
         email: r.email || null,
         phone_no: r.phone_no || null,
-        department_id: dept_id,
+        division_id: div_id,
       }
       if (r.position_no) {
         var existing = await staff.findOne({ where: { position_no: String(r.position_no) } })
