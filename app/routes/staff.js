@@ -24,8 +24,19 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
       if (error) {
         return res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
       }
+      const INTEGER_FIELDS = ['stafftype_id', 'department_id']
       const allowed = {}
-      STAFF_ALLOWED_FIELDS.forEach(f => { if (fields[f] !== undefined) allowed[f] = fields[f] })
+      STAFF_ALLOWED_FIELDS.forEach(f => {
+        if (fields[f] === undefined) return
+        var v = fields[f]
+        if (v === 'null' || v === '' && INTEGER_FIELDS.includes(f)) {
+          allowed[f] = null
+        } else if (INTEGER_FIELDS.includes(f)) {
+          allowed[f] = parseInt(v) || null
+        } else {
+          allowed[f] = v === 'null' ? null : v
+        }
+      })
       let result = await staff.create(allowed)
       res.json({ status: constants.kResultOk, result: result })
     })
@@ -124,8 +135,19 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
             if (error) {
                 return res.json({ result: constants.kResultNok, message: JSON.stringify(error) }) 
             }
+            const INTEGER_FIELDS = ['stafftype_id', 'department_id']
             const allowed = {}
-            STAFF_ALLOWED_FIELDS.forEach(f => { if (fields[f] !== undefined) allowed[f] = fields[f] })
+            STAFF_ALLOWED_FIELDS.forEach(f => {
+              if (fields[f] === undefined) return
+              var v = fields[f]
+              if (v === 'null' || v === '' && INTEGER_FIELDS.includes(f)) {
+                allowed[f] = null
+              } else if (INTEGER_FIELDS.includes(f)) {
+                allowed[f] = parseInt(v) || null
+              } else {
+                allowed[f] = v === 'null' ? null : v
+              }
+            })
             let [rowsUpdated] = await staff.update(allowed, { where: { staff_id: staff_id } })
             if (rowsUpdated > 0) {
                 let result = await staff.findOne({ where: { staff_id: staff_id } }) 
