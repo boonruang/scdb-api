@@ -153,21 +153,35 @@ app.listen(PORT, () => {
 sequelize.sync({ alter: true }).then(async () => {
   console.log('✅ Database & tables synced!');
 
-  // ── Seed: สำนักงานเลขานุการ ──────────────────────────────────────
-  // ถ้ายังไม่มีในตาราง Departments ให้ insert อัตโนมัติ
-  // และ assign Staff ที่ department_id = NULL เข้ากลุ่มนี้
+  // ── Seed: Departments + assign Staff ────────────────────────────
   try {
-    var [secDept] = await Department.findOrCreate({
-      where: { dept_name: 'สำนักงานเลขานุการ' },
-      defaults: { department_name: 'สำนักงานเลขานุการ', dept_name: 'สำนักงานเลขานุการ' }
-    })
+    var DEPT_SEEDS = [
+      'ภาควิชาคณิตศาสตร์',
+      'ภาควิชาชีววิทยา',
+      'ภาควิชาฟิสิกส์',
+      'ภาควิชาเคมี',
+      'สำนักงานเลขานุการ',
+    ]
+    var deptMap = {}
+    for (var i = 0; i < DEPT_SEEDS.length; i++) {
+      var name = DEPT_SEEDS[i]
+      var result = await Department.findOrCreate({
+        where: { dept_name: name },
+        defaults: { department_name: name, dept_name: name }
+      })
+      deptMap[name] = result[0].department_id
+    }
+    console.log('✅ Departments seeded:', JSON.stringify(deptMap))
+
+    // assign Staff ตาม stafftype: stafftype_id=1 → อาจารย์ (ไม่ชัดว่าสังกัดไหน ใช้ชื่อจริงถ้ามี)
+    // Staff ที่ department_id = null → assign สำนักงานเลขานุการ
     var fixed = await Staff.update(
-      { department_id: secDept.department_id },
+      { department_id: deptMap['สำนักงานเลขานุการ'] },
       { where: { department_id: null } }
     )
-    if (fixed[0] > 0) console.log('✅ Assigned ' + fixed[0] + ' staff to สำนักงานเลขานุการ (id=' + secDept.department_id + ')')
+    if (fixed[0] > 0) console.log('✅ Assigned ' + fixed[0] + ' null-dept staff to สำนักงานเลขานุการ')
   } catch (e) {
-    console.error('Seed สำนักงานเลขานุการ error:', e.message)
+    console.error('Seed Departments error:', e.message)
   }
   // ─────────────────────────────────────────────────────────────────
 
