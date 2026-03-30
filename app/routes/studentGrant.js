@@ -35,7 +35,7 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: Students},
       ],     
-      attributes: [ ['grant_id', 'id'], 'grant_id', 'student_id','grant_name','conference_name','amount' ]  
+      attributes: [ ['grant_id', 'id'], 'grant_id', 'student_id', 'grant_name', 'conference_name', 'amount', 'grant_type', 'grant_source', 'loan_status' ]
       }
     )    
     res.json({ status: constants.kResultOk, result: result })
@@ -88,7 +88,7 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
       include: [
         {model: Students}
       ],    
-      attributes: [ ['grant_id', 'id'], 'grant_id', 'student_id','grant_name','conference_name','amount' ]  
+      attributes: [ ['grant_id', 'id'], 'grant_id', 'student_id', 'grant_name', 'conference_name', 'amount', 'grant_type', 'grant_source', 'loan_status' ]
       }
     )     
     if (result) {
