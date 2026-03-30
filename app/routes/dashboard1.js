@@ -7,15 +7,28 @@ const { Op } = require('sequelize')
 // GET /api/v2/dashboard/list
 router.get('/list', async (req, res) => {
   try {
-    // KPI
+    const fiscalYear = parseInt(req.query.fiscalYear) || null
+
+    // KPI — แสดงบุคลากรทั้งหมดไม่ filter ปี
     var totalTeacher = await Staff.count({ where: { stafftype_id: 1 } })
     var totalSupport = await Staff.count({ where: { stafftype_id: 2 } })
     var total = totalTeacher + totalSupport
 
-    // บุคลากรแยกตามสังกัด (department_name field ใน Staff)
+    // LeaveRecord filter ตามปีงบประมาณ
+    var leaveWhere = {}
+    if (fiscalYear) {
+      var startCE = fiscalYear - 543 - 1
+      var endCE   = fiscalYear - 543
+      leaveWhere.start_date = {
+        [Op.gte]: new Date(startCE + '-10-01'),
+        [Op.lte]: new Date(endCE   + '-09-30'),
+      }
+    }
+
+    // ดึง Staff ทั้งหมด + LeaveRecord filter ตามปี
     var allStaff = await Staff.findAll({
       attributes: ['staff_id', 'position_no', 'stafftype_id', 'title_th', 'firstname_th', 'lastname_th', 'position', 'education', 'startdate', 'department_id'],
-      include: [{ model: LeaveRecord, attributes: ['leave_id', 'leave_type', 'start_date', 'end_date'] }],
+      include: [{ model: LeaveRecord, attributes: ['leave_id', 'leave_type', 'start_date', 'end_date'], where: Object.keys(leaveWhere).length ? leaveWhere : undefined, required: false }],
       order: [['stafftype_id', 'ASC'], ['firstname_th', 'ASC']],
     })
 

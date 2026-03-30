@@ -40,18 +40,18 @@ const AcademicResearch = require('../models/sciences/academicResearch');
 // 3. DEFINE ASSOCIATIONS (ส่วนที่เพิ่มเข้ามา - สำคัญมาก)
 // =================================================================
 // Stafftype Relationships
-Stafftype.hasMany(Staff, { foreignKey: 'stafftype_id' });
+Stafftype.hasMany(Staff, { foreignKey: 'stafftype_id', constraints: false });
 
 
 // Department Relationships
-Department.hasMany(Staff, { foreignKey: 'department_id' });
+Department.hasMany(Staff, { foreignKey: 'department_id', constraints: false });
 Department.hasMany(AcademicProgram, { foreignKey: 'department_id' });
 Department.hasMany(Project, { foreignKey: 'responsible_dept_id' });
 Department.hasMany(Document, { foreignKey: 'department_id' });
 
 // Staff Relationships
-Staff.belongsTo(Department, { foreignKey: 'department_id' });
-Staff.belongsTo(Stafftype, { foreignKey: 'stafftype_id' });
+Staff.belongsTo(Department, { foreignKey: 'department_id', constraints: false });
+Staff.belongsTo(Stafftype, { foreignKey: 'stafftype_id', constraints: false });
 Staff.hasMany(StaffEducation, { foreignKey: 'staff_id' });
 Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
 Staff.belongsToMany(Project, { through: ProjectStaff, foreignKey: 'staff_id', otherKey: 'project_id' });

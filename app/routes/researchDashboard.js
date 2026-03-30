@@ -30,17 +30,27 @@ router.get('/summary', async (req, res) => {
 
     const totalTeachers = await ResearchAuthor.count({ where: { staff_type: 'วิชาการ' } })
 
-    // citations: sum of citations_current_year from AuthorProfiles (สายวิชาการ)
+    // citations: sum docs_current_year จาก AuthorProfiles เฉพาะอาจารย์ที่มี paper ในปีนั้น
     const citationsResult = await sequelize.query(
-      `SELECT COALESCE(SUM(citations_current_year), 0) AS total FROM "AuthorProfiles"`,
-      { type: Sequelize.QueryTypes.SELECT }
+      `SELECT COALESCE(SUM(ap.citations_current_year), 0) AS total
+       FROM "AuthorProfiles" ap
+       JOIN "ResearchAuthors" ra ON ra.spreadsheet_id = ap.spreadsheet_id
+       JOIN "PublicationAuthors" pa ON pa.research_author_id = ra.research_author_id
+       JOIN "Publications" p ON p.pub_id = pa.pub_id
+       WHERE p.publication_year = :year`,
+      { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
     )
     const citations = parseInt(citationsResult[0].total) || 0
 
-    // hIndex: average h_index from AuthorProfiles (สายวิชาการ)
+    // hIndex: average h_index จากอาจารย์ที่มี paper ในปีนั้น
     const hIndexResult = await sequelize.query(
-      `SELECT COALESCE(AVG(h_index), 0) AS avg FROM "AuthorProfiles" WHERE h_index IS NOT NULL`,
-      { type: Sequelize.QueryTypes.SELECT }
+      `SELECT COALESCE(AVG(ap.h_index), 0) AS avg
+       FROM "AuthorProfiles" ap
+       JOIN "ResearchAuthors" ra ON ra.spreadsheet_id = ap.spreadsheet_id
+       JOIN "PublicationAuthors" pa ON pa.research_author_id = ra.research_author_id
+       JOIN "Publications" p ON p.pub_id = pa.pub_id
+       WHERE p.publication_year = :year AND ap.h_index IS NOT NULL`,
+      { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
     )
     const hIndex = Math.round(parseFloat(hIndexResult[0].avg) || 0)
 
@@ -52,6 +62,8 @@ router.get('/summary', async (req, res) => {
       { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
     )
     const publishingTeachers = parseInt(pubTeacherResult[0].cnt) || 0
+
+    const totalPubs = await publication.count({ where: { publication_year: ceYear } })
 
     // ── 2. scopusByYear (เฉพาะปีที่มีข้อมูล) ──────────────────────────────────
 
@@ -65,7 +77,7 @@ router.get('/summary', async (req, res) => {
 
     const scopusByYear = await Promise.all(
       distinctYears.map(async (yr) => {
-        const pubs = await publication.count({ where: { publication_year: yr } })
+        const pubs = await publication.count({ where: { publication_year: yr, is_scopus: true } })
         const isiPubs = await publication.count({ where: { publication_year: yr, is_isi: true } })
 
         const teachersResult = await sequelize.query(
@@ -181,26 +193,28 @@ router.get('/summary', async (req, res) => {
     // ── 6. topAuthors (Top 10 ตลอดกาล) ──────────────────────────────────────
 
     const authorRows = await sequelize.query(
-      `SELECT a.research_author_id, a.firstname, a.lastname, a.position, a.dept_name,
+      `SELECT a.research_author_id, a.firstname_th, a.lastname_th, a.title_th, a.dept_name,
               COUNT(pa.pub_id) AS cnt
        FROM "PublicationAuthors" pa
-       JOIN "ResearchAuthors" a ON pa.research_author_id = a.research_author_id
-       GROUP BY a.research_author_id, a.firstname, a.lastname, a.position, a.dept_name
+       JOIN "ResearchAuthors" a  ON pa.research_author_id = a.research_author_id
+       JOIN "Publications" p     ON pa.pub_id = p.pub_id
+       WHERE p.publication_year = :year
+       GROUP BY a.research_author_id, a.firstname_th, a.lastname_th, a.title_th, a.dept_name
        ORDER BY cnt DESC
        LIMIT 10`,
-      { type: Sequelize.QueryTypes.SELECT }
+      { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
     )
 
     const topAuthors = authorRows.map((r, idx) => ({
       rank:  idx + 1,
-      name:  [r.position, r.firstname, r.lastname].filter(Boolean).join(' '),
+      name:  [r.title_th, r.firstname_th, r.lastname_th].filter(Boolean).join(' '),
       dept:  r.dept_name || '',
       count: parseInt(r.cnt)
     }))
 
     res.json({
       fiscalYear,
-      kpi: { totalTeachers, citations, hIndex, publishingTeachers },
+      kpi: { totalTeachers, citations, hIndex, publishingTeachers, totalPubs },
       scopusByYear,
       byQuartile,
       byDept,
@@ -236,6 +250,7 @@ router.get('/publications', async (req, res) => {
       replacements.search = `%${search}%`
       conditions.push(`(
         p.title ILIKE :search OR
+        CONCAT(a.firstname_th, ' ', a.lastname_th) ILIKE :search OR
         CONCAT(a.firstname, ' ', a.lastname) ILIKE :search OR
         a.dept_name ILIKE :search
       )`)
@@ -286,7 +301,7 @@ router.get('/publications', async (req, res) => {
     if (authorIds.length > 0) {
       const authors = await ResearchAuthor.findAll({
         where: { research_author_id: authorIds },
-        attributes: ['research_author_id', 'firstname', 'lastname', 'position', 'dept_name']
+        attributes: ['research_author_id', 'firstname_th', 'lastname_th', 'title_th', 'dept_name']
       })
       authors.forEach(a => { authorMap[a.research_author_id] = a })
     }
@@ -297,7 +312,7 @@ router.get('/publications', async (req, res) => {
       const a = row.first_author_id ? authorMap[row.first_author_id] : null
       return {
         id:        row.pub_id,
-        author:    a ? [a.position, a.firstname, a.lastname].filter(Boolean).join(' ') : '',
+        author:    a ? [a.title_th, a.firstname_th, a.lastname_th].filter(Boolean).join(' ') : '',
         dept:      a ? (a.dept_name || '') : '',
         title:     row.title,
         year:      row.publication_year,
