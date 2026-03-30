@@ -161,6 +161,7 @@ sequelize.sync({ alter: true }).then(async () => {
       'ภาควิชาฟิสิกส์',
       'ภาควิชาเคมี',
       'สำนักงานเลขานุการ',
+      'โครงการ วมว.',
     ]
     var deptMap = {}
     for (var i = 0; i < DEPT_SEEDS.length; i++) {
