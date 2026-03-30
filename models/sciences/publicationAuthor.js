@@ -7,28 +7,20 @@ const publicationAuthor = sequelize.define(
     pub_id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
-      references: {
-        model: 'Publications',
-        key: 'pub_id',
-      },
+      references: { model: 'Publications', key: 'pub_id' },
     },
-    author_id: {
+    research_author_id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
-      references: {
-        model: 'AuthorProfiles',
-        key: 'author_id',
-      },
+      references: { model: 'ResearchAuthors', key: 'research_author_id' },
     },
   },
   {
     timestamps: false,
-    tableName: 'PublicationAuthors'
-  },
+    tableName: 'PublicationAuthors',
+  }
 )
 
-;(async () => {
-  await publicationAuthor.sync({ alter: true })
-})()
+;(async () => { await publicationAuthor.sync({ alter: true }) })()
 
 module.exports = publicationAuthor

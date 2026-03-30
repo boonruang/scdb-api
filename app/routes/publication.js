@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const formidable = require('formidable')
 const { Op } = require('sequelize')
-const AuthorProfile = require('../../models/sciences/authorProfile')
+const ResearchAuthor = require('../../models/sciences/researchAuthor')
 const publication = require('../../models/sciences/publication')
 const publicationAuthor = require('../../models/sciences/publicationAuthor')
 const constants = require('../../config/constant')
@@ -44,9 +44,9 @@ router.get('/list', JwtMiddleware.checkToken, async (req, res) => {
       ],
       include: [
         {
-          model: AuthorProfile,
+          model: ResearchAuthor,
           through: { attributes: [] },
-          attributes: ['author_id', 'firstname_th', 'lastname_th', 'firstname', 'lastname']
+          attributes: ['research_author_id', 'firstname_th', 'lastname_th', 'firstname', 'lastname']
         }
       ],
       order: [['pub_id', 'DESC']]
@@ -150,18 +150,18 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
     if (links.length > 0) {
       var authorSpreadsheetIds = links.map(function(l) { return l.author_spreadsheet_id }).filter(Boolean)
       var uniqueAuthorIds = authorSpreadsheetIds.filter(function(v, i, a) { return a.indexOf(v) === i })
-      var authorRows = await AuthorProfile.findAll({
+      var authorRows = await ResearchAuthor.findAll({
         where: { spreadsheet_id: { [Op.in]: uniqueAuthorIds } },
-        attributes: ['author_id', 'spreadsheet_id']
+        attributes: ['research_author_id', 'spreadsheet_id']
       })
       var authorMap = {}
-      authorRows.forEach(function(a) { authorMap[a.spreadsheet_id] = a.author_id })
+      authorRows.forEach(function(a) { authorMap[a.spreadsheet_id] = a.research_author_id })
 
       var junctions = []
       links.forEach(function(link) {
         var pubId = pubMap[link.pub_spreadsheet_id]
         var authorId = authorMap[link.author_spreadsheet_id]
-        if (pubId && authorId) junctions.push({ pub_id: pubId, author_id: authorId })
+        if (pubId && authorId) junctions.push({ pub_id: pubId, research_author_id: authorId })
       })
       if (junctions.length > 0) {
         await publicationAuthor.bulkCreate(junctions, { ignoreDuplicates: true })

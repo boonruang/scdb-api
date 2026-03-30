@@ -32,7 +32,7 @@ const StudentAward = require('../models/sciences/studentAward');
 const StudentActivity = require('../models/sciences/studentActivity');
 const Document = require('../models/sciences/document');
 const Major = require('../models/sciences/major');
-const AuthorProfile = require('../models/sciences/authorProfile');
+const ResearchAuthor = require('../models/sciences/researchAuthor');
 const AcademicResearch = require('../models/sciences/academicResearch');
 
 
@@ -55,12 +55,12 @@ Staff.belongsTo(Stafftype, { foreignKey: 'stafftype_id' });
 Staff.hasMany(StaffEducation, { foreignKey: 'staff_id' });
 Staff.hasMany(LeaveRecord, { foreignKey: 'staff_id' });
 Staff.belongsToMany(Project, { through: ProjectStaff, foreignKey: 'staff_id', otherKey: 'project_id' });
-// Publication Relationships — ใช้ AuthorProfile แทน Staff
-AuthorProfile.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'author_id', otherKey: 'pub_id' });
-Publication.belongsToMany(AuthorProfile, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'author_id' });
+// Publication Relationships — ใช้ ResearchAuthor เป็น FK กลาง (sync มาจาก AuthorProfile + AuthorProfileSupport)
+ResearchAuthor.belongsToMany(Publication, { through: PublicationAuthor, foreignKey: 'research_author_id', otherKey: 'pub_id' });
+Publication.belongsToMany(ResearchAuthor, { through: PublicationAuthor, foreignKey: 'pub_id', otherKey: 'research_author_id' });
 
 PublicationAuthor.belongsTo(Publication, { foreignKey: 'pub_id' });
-PublicationAuthor.belongsTo(AuthorProfile, { foreignKey: 'author_id' });
+PublicationAuthor.belongsTo(ResearchAuthor, { foreignKey: 'research_author_id' });
 
 
 // AcademicProgram Relationships
@@ -133,6 +133,7 @@ app.use('/api/v2/studentactivity', require('./routes/studentActivity'));
 app.use('/api/v2/document', require('./routes/document'))
 app.use('/api/v2/major', require('./routes/major'));
 app.use('/api/v2/authorprofile', require('./routes/authorProfile'));
+app.use('/api/v2/authorprofilesupport', require('./routes/authorProfileSupport'));
 app.use('/api/v2/log', require('./routes/log'))
 app.use('/api/v2/user', require('./routes/user'))
 app.use('/api/v2/auth', require('./routes/auth'))
