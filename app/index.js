@@ -150,8 +150,27 @@ app.listen(PORT, () => {
   console.log('\x1b[36m%s\x1b[0m', `listening on port:${PORT}`)
 })
 
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ alter: true }).then(async () => {
   console.log('✅ Database & tables synced!');
+
+  // ── Seed: สำนักงานเลขานุการ ──────────────────────────────────────
+  // ถ้ายังไม่มีในตาราง Departments ให้ insert อัตโนมัติ
+  // และ assign Staff ที่ department_id = NULL เข้ากลุ่มนี้
+  try {
+    var [secDept] = await Department.findOrCreate({
+      where: { dept_name: 'สำนักงานเลขานุการ' },
+      defaults: { department_name: 'สำนักงานเลขานุการ', dept_name: 'สำนักงานเลขานุการ' }
+    })
+    var fixed = await Staff.update(
+      { department_id: secDept.department_id },
+      { where: { department_id: null } }
+    )
+    if (fixed[0] > 0) console.log('✅ Assigned ' + fixed[0] + ' staff to สำนักงานเลขานุการ (id=' + secDept.department_id + ')')
+  } catch (e) {
+    console.error('Seed สำนักงานเลขานุการ error:', e.message)
+  }
+  // ─────────────────────────────────────────────────────────────────
+
 }).catch(error => {
     console.error('Unable to sync database:', error);
 });
