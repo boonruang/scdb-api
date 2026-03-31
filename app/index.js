@@ -159,6 +159,23 @@ app.listen(PORT, () => {
 sequelize.sync({ alter: true }).then(async () => {
   console.log('✅ Database & tables synced!');
 
+  // ── Seed: Stafftype ──────────────────────────────────────────────
+  try {
+    var STAFFTYPE_SEEDS = [
+      { stafftype_id: 1, name: 'อาจารย์' },
+      { stafftype_id: 2, name: 'สายสนับสนุน' },
+    ]
+    for (var ti = 0; ti < STAFFTYPE_SEEDS.length; ti++) {
+      await Stafftype.findOrCreate({
+        where: { stafftype_id: STAFFTYPE_SEEDS[ti].stafftype_id },
+        defaults: STAFFTYPE_SEEDS[ti]
+      })
+    }
+    console.log('✅ Stafftypes seeded')
+  } catch (e) {
+    console.error('Seed Stafftype error:', e.message)
+  }
+
   // ── Seed: Divisions (สังกัดบุคลากร) ─────────────────────────────
   try {
     var DIV_SEEDS = [
