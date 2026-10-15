@@ -3,6 +3,7 @@ const router = express.Router()
 const AuthorProfileSupport = require('../../models/sciences/authorProfileSupport')
 const ResearchAuthor = require('../../models/sciences/researchAuthor')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
+const { findStaffIdByPositionNo } = require('../../utils/linkStaff')
 
 async function syncResearchAuthor(r, staffType) {
   var raPayload = {
@@ -15,6 +16,7 @@ async function syncResearchAuthor(r, staffType) {
     position:     r.position || null,
     position_no:  r.position_no || null,
     dept_name:    r.dept_name || null,
+    staff_id:     await findStaffIdByPositionNo(r.position_no),
   }
   if (r.spreadsheet_id) {
     var existing = await ResearchAuthor.findOne({ where: { spreadsheet_id: String(r.spreadsheet_id) } })

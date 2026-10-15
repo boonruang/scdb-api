@@ -6,6 +6,7 @@ const Division = require('../../models/sciences/division')
 const Stafftype = require('../../models/sciences/stafftype')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
+const { linkAllResearchAuthors } = require('../../utils/linkStaff')
 const formidable = require('formidable')
 
 //  @route              POST  /api/v2/staff
@@ -221,7 +222,8 @@ router.post('/bulkupdateprofile', JwtMiddleware.checkToken, async (req, res) => 
 })
 
 // POST /api/v2/staff/bulk — upsert by position_no
-router.post('/bulk', async (req, res) => {
+// เดิมไม่มี JWT ใครก็ยิงเขียนทับข้อมูลบุคลากรได้ (finding 2026-09-03)
+router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var records = req.body
     if (!Array.isArray(records) || records.length === 0) {
@@ -278,7 +280,9 @@ router.post('/bulk', async (req, res) => {
       }
       upserted++
     }
-    res.json({ status: constants.kResultOk, count: upserted })
+    // บุคลากรเข้ามาใหม่ อาจตรงกับผู้แต่งที่ import ไว้ก่อน ผูกใหม่ทั้งตาราง
+    var link = await linkAllResearchAuthors()
+    res.json({ status: constants.kResultOk, count: upserted, authorsLinked: link.linked })
   } catch (e) {
     res.json({ status: constants.kResultNok, result: e.message })
   }

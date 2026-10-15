@@ -4,6 +4,7 @@ const formidable = require('formidable')
 const Staff = require('../../models/sciences/staff')
 const leaveRecord = require('../../models/sciences/leaveRecord')
 const constants = require('../../config/constant')
+const { upsertRows } = require('../../utils/upsertRows')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 
 //  @route              POST  /api/v2/leave-record
@@ -106,7 +107,8 @@ router.delete('/:id', JwtMiddleware.checkToken, async (req, res) => {
 })
 
 // POST /api/v2/leaverecord/bulk — bulk insert LeaveRecords matched by position_no → staff_id
-router.post('/bulk', async (req, res) => {
+// เดิมไม่มี JWT และ insert ซ้ำทุกครั้งที่ import
+router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var records = req.body
     if (!Array.isArray(records) || records.length === 0) {
@@ -127,8 +129,9 @@ router.post('/bulk', async (req, res) => {
       }
     }).filter(function(r) { return r.staff_id })
 
-    await leaveRecord.bulkCreate(toInsert)
-    res.json({ status: constants.kResultOk, count: toInsert.length })
+    // กันซ้ำ: บุคลากรคนเดิม + ประเภทการลาเดิม + วันเริ่มเดิม = รายการเดียวกัน
+    var r = await upsertRows(leaveRecord, toInsert, ['staff_id', 'leave_type', 'start_date'])
+    res.json({ status: constants.kResultOk, count: toInsert.length, inserted: r.inserted, updated: r.updated, dupInFile: r.dupInFile, staffNotFound: records.length - toInsert.length })
   } catch (e) {
     res.json({ status: constants.kResultNok, result: e.message })
   }

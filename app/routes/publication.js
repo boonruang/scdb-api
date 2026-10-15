@@ -5,6 +5,7 @@ const { Op } = require('sequelize')
 const ResearchAuthor = require('../../models/sciences/researchAuthor')
 const publication = require('../../models/sciences/publication')
 const publicationAuthor = require('../../models/sciences/publicationAuthor')
+const sequelize = require('../../config/db-instance')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
 
@@ -133,17 +134,40 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
       return res.json({ status: constants.kResultNok, result: 'No data provided' })
     }
 
-    // Step 1: bulkCreate publications
-    const created = await publication.bulkCreate(records, { ignoreDuplicates: true })
-
-    // Step 2: query pub_id จริงจาก DB (ignoreDuplicates rows ที่ซ้ำอาจไม่ return)
-    var pubSpreadsheetIds = records.map(function(r) { return r.spreadsheet_id }).filter(Boolean)
-    var pubRows = await publication.findAll({
-      where: { spreadsheet_id: { [Op.in]: pubSpreadsheetIds } },
-      attributes: ['pub_id', 'spreadsheet_id']
-    })
-    var pubMap = {}
-    pubRows.forEach(function(p) { pubMap[p.spreadsheet_id] = p.pub_id })
+    // Step 1: upsert ทีละเรื่อง กันผลงานซ้ำเมื่อ import ไฟล์เดิมหรือไฟล์ปีถัดไป
+    // ไม่ใช้ ID(P) เป็น key เพราะเลข P1, P2 เป็นลำดับในไฟล์ ไฟล์ใหม่อาจเริ่มนับใหม่
+    // key: DOI (ถ้ามี) ไม่งั้นใช้ ชื่อเรื่อง + ปีที่เผยแพร่ (ไม่สนตัวพิมพ์/ช่องว่าง)
+    var inserted = 0, updated = 0
+    var pubMap = {}   // ID(P) ในไฟล์นี้ → pub_id ใน DB สำหรับผูกผู้แต่ง
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i]
+      var doi = String(r.doi || '').trim()
+      var title = String(r.title || '').trim().replace(/\s+/g, ' ')
+      var where = doi
+        ? { doi: doi }
+        : { publication_year: r.publication_year, [Op.and]: [sequelize.where(
+            sequelize.fn('lower', sequelize.fn('regexp_replace', sequelize.fn('trim', sequelize.col('title')), '\\s+', ' ', 'g')),
+            title.toLowerCase()
+          )] }
+      var existing = title || doi ? await publication.findOne({ where: where, attributes: ['pub_id'] }) : null
+      var pubId
+      if (existing) {
+        // ช่องที่ไฟล์ใหม่เว้นว่าง ไม่เขียนทับค่าเดิม (เช่น DOI ที่เคยกรอกไว้)
+        var changes = {}
+        Object.keys(r).forEach(function(k) {
+          if (k !== 'pub_id' && r[k] !== '' && r[k] !== null && r[k] !== undefined) changes[k] = r[k]
+        })
+        if (changes.title) changes.title = title
+        await publication.update(changes, { where: { pub_id: existing.pub_id } })
+        pubId = existing.pub_id
+        updated++
+      } else {
+        var row = await publication.create(Object.assign({}, r, { title: title || r.title }))
+        pubId = row.pub_id
+        inserted++
+      }
+      if (r.spreadsheet_id) pubMap[r.spreadsheet_id] = pubId
+    }
 
     // Step 3: สร้าง PublicationAuthor links
     var linksCreated = 0
@@ -169,7 +193,7 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
       }
     }
 
-    res.json({ status: constants.kResultOk, count: created.length, links_count: linksCreated })
+    res.json({ status: constants.kResultOk, count: inserted + updated, inserted, updated, links_count: linksCreated })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }

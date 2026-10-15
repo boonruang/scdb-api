@@ -24,6 +24,8 @@ const ResearchAuthor = sequelize.define(
     position:       { type: Sequelize.STRING,     allowNull: true },
     position_no:    { type: Sequelize.STRING(20), allowNull: true },
     dept_name:      { type: Sequelize.STRING,     allowNull: true },
+    // บุคลากรที่ตรงกัน จับคู่ด้วยเลขประจำตำแหน่ง (utils/linkStaff.js) null = ยังหาไม่เจอ
+    staff_id:       { type: Sequelize.INTEGER,    allowNull: true },
   },
   {
     tableName: 'ResearchAuthors',

@@ -6,6 +6,7 @@ const studentAward = require('../../models/sciences/studentAward')
 const student = require('../../models/sciences/student')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
+const { upsertRows } = require('../../utils/upsertRows')
 
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   try {
@@ -60,8 +61,9 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
       }
     })
 
-    var created = await studentAward.bulkCreate(toInsert, { ignoreDuplicates: false })
-    res.json({ status: constants.kResultOk, count: created.length })
+    // กันซ้ำ: นิสิตคนเดิม + รางวัลเดิม + วันที่เดิม = รายการเดียวกัน
+    var r = await upsertRows(studentAward, toInsert, ['student_id', 'award_name', 'award_date'])
+    res.json({ status: constants.kResultOk, count: r.inserted + r.updated, inserted: r.inserted, updated: r.updated, dupInFile: r.dupInFile })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }

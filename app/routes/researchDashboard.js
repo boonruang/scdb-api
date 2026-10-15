@@ -30,29 +30,17 @@ router.get('/summary', async (req, res) => {
 
     const totalTeachers = await ResearchAuthor.count({ where: { staff_type: 'วิชาการ' } })
 
-    // citations: sum docs_current_year จาก AuthorProfiles เฉพาะอาจารย์ที่มี paper ในปีนั้น
-    const citationsResult = await sequelize.query(
-      `SELECT COALESCE(SUM(ap.citations_current_year), 0) AS total
-       FROM "AuthorProfiles" ap
-       JOIN "ResearchAuthors" ra ON ra.spreadsheet_id = ap.spreadsheet_id
-       JOIN "PublicationAuthors" pa ON pa.research_author_id = ra.research_author_id
-       JOIN "Publications" p ON p.pub_id = pa.pub_id
-       WHERE p.publication_year = :year`,
-      { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
+    // citations / h-index เป็นค่าโปรไฟล์ "ปัจจุบัน" (ณ วันที่ import Author profile) ไม่ผูกกับปีที่เลือก
+    // เดิม join ผ่าน PublicationAuthors ตามปีตีพิมพ์ ทำให้ citations ของคนที่มีหลาย paper ถูกบวกซ้ำ
+    // และ h-index เฉลี่ยถ่วงตามจำนวน paper (ข้อเสนอแนะคณะ: แยกโปรไฟล์ปัจจุบัน กับผลงานตามปีเผยแพร่)
+    const profileResult = await sequelize.query(
+      `SELECT COALESCE(SUM(ap.citations_current_year), 0) AS citations,
+              COALESCE(AVG(ap.h_index), 0)               AS h_avg
+       FROM "AuthorProfiles" ap`,
+      { type: Sequelize.QueryTypes.SELECT }
     )
-    const citations = parseInt(citationsResult[0].total) || 0
-
-    // hIndex: average h_index จากอาจารย์ที่มี paper ในปีนั้น
-    const hIndexResult = await sequelize.query(
-      `SELECT COALESCE(AVG(ap.h_index), 0) AS avg
-       FROM "AuthorProfiles" ap
-       JOIN "ResearchAuthors" ra ON ra.spreadsheet_id = ap.spreadsheet_id
-       JOIN "PublicationAuthors" pa ON pa.research_author_id = ra.research_author_id
-       JOIN "Publications" p ON p.pub_id = pa.pub_id
-       WHERE p.publication_year = :year AND ap.h_index IS NOT NULL`,
-      { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
-    )
-    const hIndex = Math.round(parseFloat(hIndexResult[0].avg) || 0)
+    const citations = parseInt(profileResult[0].citations) || 0
+    const hIndex = Math.round(parseFloat(profileResult[0].h_avg) || 0)
 
     const pubTeacherResult = await sequelize.query(
       `SELECT COUNT(DISTINCT pa.research_author_id) AS cnt
@@ -128,16 +116,8 @@ router.get('/summary', async (req, res) => {
       { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
     )
 
-    if (deptRows.length === 0) {
-      deptRows = await sequelize.query(
-        `SELECT COALESCE(p.department, 'ไม่ระบุ') AS dept_name, COUNT(p.pub_id) AS cnt
-         FROM "Publications" p
-         WHERE p.publication_year = :year
-         GROUP BY COALESCE(p.department, 'ไม่ระบุ')
-         ORDER BY cnt DESC`,
-        { replacements: { year: ceYear }, type: Sequelize.QueryTypes.SELECT }
-      )
-    }
+    // เดิมมี fallback ไป query p.department ซึ่งไม่มีในตาราง Publications
+    // ปีที่ไม่มีผลงานเลยจึงตอบ 500 ทั้ง endpoint; ไม่มีผลงาน = deptRows ว่าง ถูกต้องอยู่แล้ว
 
     const deptTotal = deptRows.reduce((sum, r) => sum + parseInt(r.cnt), 0)
     const byDept = deptRows.map(r => ({

@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const sequelize = require('../../config/db-instance')
 const { Sequelize, Op } = require('sequelize')
+const JwtMiddleware = require('../../config/Jwt-Middleware')
 const AdmissionPlan = require('../../models/sciences/admissionPlan')
 const AcademicProgram = require('../../models/sciences/academicProgram')
 const Student = require('../../models/sciences/student')
@@ -47,7 +48,7 @@ router.get('/admission/:id', async (req, res) => {
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
-router.post('/admission', async (req, res) => {
+router.post('/admission', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var r = req.body
     var row = await AdmissionPlan.create({
@@ -60,7 +61,7 @@ router.post('/admission', async (req, res) => {
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
-router.put('/admission/:id', async (req, res) => {
+router.put('/admission/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var row = await AdmissionPlan.findByPk(req.params.id)
     if (!row) return res.json({ status: 'nok', result: 'Not found' })
@@ -75,7 +76,7 @@ router.put('/admission/:id', async (req, res) => {
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
-router.delete('/admission/:id', async (req, res) => {
+router.delete('/admission/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var row = await AdmissionPlan.findByPk(req.params.id)
     if (!row) return res.json({ status: 'nok', result: 'Not found' })
@@ -105,7 +106,7 @@ router.get('/research/:id', async (req, res) => {
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
-router.post('/research', async (req, res) => {
+router.post('/research', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var r = req.body
     var row = await AcademicResearch.create({
@@ -126,7 +127,7 @@ router.post('/research', async (req, res) => {
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
-router.put('/research/:id', async (req, res) => {
+router.put('/research/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var row = await AcademicResearch.findByPk(req.params.id)
     if (!row) return res.json({ status: 'nok', result: 'Not found' })
@@ -149,7 +150,7 @@ router.put('/research/:id', async (req, res) => {
   } catch (e) { res.json({ status: 'nok', result: e.message }) }
 })
 
-router.delete('/research/:id', async (req, res) => {
+router.delete('/research/:id', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var row = await AcademicResearch.findByPk(req.params.id)
     if (!row) return res.json({ status: 'nok', result: 'Not found' })
@@ -159,7 +160,8 @@ router.delete('/research/:id', async (req, res) => {
 })
 
 // POST /api/v2/academic/admission/bulk
-router.post('/admission/bulk', async (req, res) => {
+// เดิมไม่มี JWT (open endpoint)
+router.post('/admission/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var records = req.body
     if (!Array.isArray(records) || !records.length) return res.json({ status: 'nok', result: 'No data' })
@@ -204,7 +206,7 @@ router.post('/admission/bulk', async (req, res) => {
 })
 
 // POST /api/v2/academic/research/bulk — upsert วิจัย ป.โท / ป.เอก → AcademicResearch
-router.post('/research/bulk', async (req, res) => {
+router.post('/research/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var records = req.body
     if (!Array.isArray(records) || !records.length) return res.json({ status: 'nok', result: 'No data' })
@@ -245,7 +247,7 @@ router.post('/research/bulk', async (req, res) => {
 })
 
 // POST /api/v2/academic/grant/bulk — upsert ทุนนำเสนอ
-router.post('/grant/bulk', async (req, res) => {
+router.post('/grant/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var records = req.body
     if (!Array.isArray(records) || !records.length) return res.json({ status: 'nok', result: 'No data' })

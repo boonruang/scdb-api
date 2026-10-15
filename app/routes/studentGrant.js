@@ -6,6 +6,7 @@ const studentGrant = require('../../models/sciences/studentGrant')
 const Students = require('../../models/sciences/student')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
+const { upsertRows } = require('../../utils/upsertRows')
 
 //  @route              POST  /api/v2/student-grant
 //  @desc               Add student grant using formidable
@@ -73,8 +74,9 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
       }
     }).filter(function(r) { return r.student_id })
 
-    var created = await studentGrant.bulkCreate(toInsert, { ignoreDuplicates: false })
-    res.json({ status: constants.kResultOk, count: created.length })
+    // กันซ้ำ: นิสิตคนเดิม + ทุนเดิม = รายการเดียวกัน
+    var r = await upsertRows(studentGrant, toInsert, ['student_id', 'grant_name'])
+    res.json({ status: constants.kResultOk, count: r.inserted + r.updated, inserted: r.inserted, updated: r.updated, dupInFile: r.dupInFile })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }

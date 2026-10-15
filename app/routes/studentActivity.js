@@ -4,6 +4,7 @@ const formidable = require('formidable')
 const studentActivity = require('../../models/sciences/studentActivity')
 const constants = require('../../config/constant')
 const JwtMiddleware = require('../../config/Jwt-Middleware')
+const { upsertRows } = require('../../utils/upsertRows')
 
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   try {
@@ -36,8 +37,9 @@ router.post('/bulk', JwtMiddleware.checkToken, async (req, res) => {
   try {
     var records = Array.isArray(req.body) ? req.body : (req.body.records || [])
     if (!records.length) return res.json({ status: constants.kResultNok, result: 'No data provided' })
-    var created = await studentActivity.bulkCreate(records, { ignoreDuplicates: false })
-    res.json({ status: constants.kResultOk, count: created.length })
+    // กันซ้ำด้วยรหัสโครงการ (แถวที่ไม่มีรหัสเข้าใหม่เสมอ)
+    var r = await upsertRows(studentActivity, records, ['activity_code'])
+    res.json({ status: constants.kResultOk, count: r.inserted + r.updated, inserted: r.inserted, updated: r.updated, dupInFile: r.dupInFile })
   } catch (error) {
     res.json({ status: constants.kResultNok, result: JSON.stringify(error) })
   }

@@ -107,6 +107,7 @@ app.use('/api/v2/dashboard/budget',   require('./routes/budgetDashboard'))
 app.use('/api/v2/budgetplan',         require('./routes/budgetPlan'))
 app.use('/api/v2/budgetactivity',     require('./routes/budgetActivity'))
 app.use('/api/v2/budgetdisbursement', require('./routes/budgetDisbursement'))
+app.use('/api/v2/bulkdelete',         require('./routes/bulkDelete'))
 
 // --- v2 (เดิม) ---
 // --- โปรเจคเก่า ---
@@ -123,6 +124,7 @@ app.use('/api/v2/department', require('./routes/department'));
 app.use('/api/v2/division', require('./routes/division'));
 app.use('/api/v2/staff', require('./routes/staff'));
 app.use('/api/v2/staffeducation', require('./routes/staffEducation'));
+app.use('/api/v2/staffprofile', require('./routes/staffProfile'));
 app.use('/api/v2/leaverecord', require('./routes/leaveRecord'));
 app.use('/api/v2/academicprogram', require('./routes/academicProgram'));
 app.use('/api/v2/academicgrant',  require('./routes/academicGrant'));

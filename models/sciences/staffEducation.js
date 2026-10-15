@@ -18,6 +18,10 @@ const staffEducation = sequelize.define(
         key: 'staff_id',
       },
     },
+    level: {
+      type: Sequelize.STRING(50),   // ปริญญาตรี / ปริญญาโท / ปริญญาเอก
+      allowNull: true,
+    },
     degree: {
       type: Sequelize.STRING,
     },

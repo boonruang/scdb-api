@@ -22,6 +22,23 @@ function toCe(beYear) {
   return beYear - 543
 }
 
+// ?asOf=YYYY-MM-DD → ดูยอด ณ วันที่ (ตัดรายการที่ลงวันหลังจากนั้นออก)
+function parseAsOf(q) {
+  const v = String(q || '').trim()
+  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null
+}
+
+// เงื่อนไขรายการเบิกจ่ายที่นับ:
+// - ผูกพันที่มี PO และมีจ่ายจริงเลข PO เดียวกันในกิจกรรมเดียวกันแล้ว ไม่นับซ้ำ (ผูกพันนั้นถูกล้างด้วยการจ่ายจริง)
+// - asOf: นับเฉพาะรายการที่ลงวันไม่เกินวันที่เลือก
+function disbCondition(alias, asOf) {
+  const dateCut = (a) => (asOf ? ` AND ${a}.disburse_date <= :asOf` : '')
+  return `(${alias}.disburse_type NOT LIKE '1%' OR ${alias}.po_no IS NULL OR NOT EXISTS (
+            SELECT 1 FROM "BudgetDisbursements" px
+            WHERE px.activity_code = ${alias}.activity_code AND px.po_no = ${alias}.po_no
+              AND px.disburse_type LIKE '2%'${dateCut('px')}))${dateCut(alias)}`
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/v2/dashboard/budget/summary
 //
@@ -32,6 +49,7 @@ router.get('/summary', async (req, res) => {
   try {
     const fiscalYear = parseInt(req.query.fiscalYear) || currentBeYear()
     const ceYear     = toCe(fiscalYear)
+    const asOf       = parseAsOf(req.query.asOf)
 
     // นับโครงการและงบรวมจาก BudgetPlans ตาม fiscal_year
     const summaryResult = await sequelize.query(
@@ -57,9 +75,9 @@ router.get('/summary', async (req, res) => {
        FROM "BudgetDisbursements" bd
        JOIN "BudgetActivities" ba ON bd.activity_code = ba.activity_code
        JOIN "BudgetPlans" bp      ON ba.budget_code   = bp.budget_code
-       WHERE bp.fiscal_year = :ceYear
+       WHERE bp.fiscal_year = :ceYear AND ${disbCondition('bd', asOf)}
        GROUP BY bd.disburse_type`,
-      { replacements: { ceYear }, type: Sequelize.QueryTypes.SELECT }
+      { replacements: { ceYear, asOf }, type: Sequelize.QueryTypes.SELECT }
     )
 
     let totalDisbursed = 0
@@ -73,11 +91,13 @@ router.get('/summary', async (req, res) => {
     res.json({
       result: {
         fiscalYear,
+        asOf,
         kpi: {
           totalProjects:  parseInt(s.total_projects) || 0,
           totalBudget:    parseFloat(s.total_budget) || 0,
           totalDisbursed: Math.round(totalDisbursed),
           totalCommitted: Math.round(totalCommitted),
+          totalRemaining: Math.round((parseFloat(s.total_budget) || 0) - totalDisbursed - totalCommitted),
         },
         byQuarter: {
           q1: parseFloat(s.total_q1) || 0,
@@ -112,6 +132,7 @@ router.get('/projects', async (req, res) => {
     const page        = Math.max(1, parseInt(req.query.page)  || 1)
     const limit       = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10))
     const offset      = (page - 1) * limit
+    const asOf        = parseAsOf(req.query.asOf)
 
     const conditions   = ['bp.fiscal_year = :ceYear']
     const replacements = { ceYear, limit, offset }
@@ -170,9 +191,9 @@ router.get('/projects', async (req, res) => {
                 COALESCE(SUM(bd.amount),0) AS total
          FROM "BudgetDisbursements" bd
          JOIN "BudgetActivities" ba ON bd.activity_code = ba.activity_code
-         WHERE ba.budget_code IN (:budgetCodes)
+         WHERE ba.budget_code IN (:budgetCodes) AND ${disbCondition('bd', asOf)}
          GROUP BY ba.budget_code, bd.disburse_type, bd.disburse_date`,
-        { replacements: { budgetCodes }, type: Sequelize.QueryTypes.SELECT }
+        { replacements: { budgetCodes, asOf }, type: Sequelize.QueryTypes.SELECT }
       )
 
       // Q1=ม.ค.-มี.ค.(1-3), Q2=เม.ย.-มิ.ย.(4-6), Q3=ก.ค.-ก.ย.(7-9), Q4=ต.ค.-ธ.ค.(10-12)
@@ -218,6 +239,7 @@ router.get('/projects', async (req, res) => {
         budget:         parseFloat(row.budget_amount) || 0,
         disbursed:      Math.round(d.disbursed),
         committed:      Math.round(d.committed),
+        remaining:      Math.round((parseFloat(row.budget_amount) || 0) - d.disbursed - d.committed),
         activityCount:  parseInt(row.activity_count) || 0,
         totalRequested: Math.round(parseFloat(row.total_requested) || 0),
         q1Budget:       parseFloat(row.plan_q1) || 0,
@@ -236,7 +258,7 @@ router.get('/projects', async (req, res) => {
     })
 
     res.json({
-      result: { total, page, limit, data }
+      result: { total, page, limit, asOf, data }
     })
 
   } catch (error) {
@@ -253,6 +275,7 @@ router.get('/projects', async (req, res) => {
 router.get('/activities', async (req, res) => {
   try {
     const budgetCode = (req.query.budgetCode || '').trim()
+    const asOf       = parseAsOf(req.query.asOf)
     if (!budgetCode) {
       return res.status(400).json({ error: true, message: 'budgetCode is required' })
     }
@@ -265,22 +288,22 @@ router.get('/activities', async (req, res) => {
               MAX(CASE WHEN bd.disburse_type LIKE '2%' THEN bd.disburse_date ELSE NULL END) AS last_disburse_date,
               MAX(CASE WHEN bd.disburse_type LIKE '1%' THEN bd.disburse_date ELSE NULL END) AS last_commit_date
        FROM "BudgetActivities" ba
-       LEFT JOIN "BudgetDisbursements" bd ON ba.activity_code = bd.activity_code
+       LEFT JOIN "BudgetDisbursements" bd ON ba.activity_code = bd.activity_code AND ${disbCondition('bd', asOf)}
        WHERE ba.budget_code = :budgetCode
        GROUP BY ba.activity_id, ba.activity_code, ba.activity_name,
                 ba.budget_requested, ba.start_date, ba.end_date
        ORDER BY ba.activity_id ASC`,
-      { replacements: { budgetCode }, type: Sequelize.QueryTypes.SELECT }
+      { replacements: { budgetCode, asOf }, type: Sequelize.QueryTypes.SELECT }
     )
 
     // ดึง disbursement รายการพร้อม id และวันที่
     const disbRows = await sequelize.query(
-      `SELECT bd.disbursement_id, bd.activity_code, bd.disburse_type, bd.amount, bd.disburse_date, bd.note
+      `SELECT bd.disbursement_id, bd.activity_code, bd.disburse_type, bd.amount, bd.disburse_date, bd.note, bd.fin_no, bd.po_no
        FROM "BudgetDisbursements" bd
        JOIN "BudgetActivities" ba ON bd.activity_code = ba.activity_code
-       WHERE ba.budget_code = :budgetCode
+       WHERE ba.budget_code = :budgetCode${asOf ? ' AND bd.disburse_date <= :asOf' : ''}
        ORDER BY bd.activity_code ASC, bd.disburse_date ASC, bd.disbursement_id ASC`,
-      { replacements: { budgetCode }, type: Sequelize.QueryTypes.SELECT }
+      { replacements: { budgetCode, asOf }, type: Sequelize.QueryTypes.SELECT }
     )
 
     const disbByActivity = {}
@@ -292,6 +315,8 @@ router.get('/activities', async (req, res) => {
         amount: Math.round(parseFloat(r.amount) || 0),
         date:   r.disburse_date,
         note:   r.note || '',
+        finNo:  r.fin_no || '',
+        poNo:   r.po_no || '',
       })
     })
 
@@ -302,6 +327,7 @@ router.get('/activities', async (req, res) => {
       budgetRequested:  parseFloat(r.budget_requested) || 0,
       disbursed:        Math.round(parseFloat(r.disbursed) || 0),
       committed:        Math.round(parseFloat(r.committed) || 0),
+      remaining:        Math.round((parseFloat(r.budget_requested) || 0) - (parseFloat(r.disbursed) || 0) - (parseFloat(r.committed) || 0)),
       startDate:        r.start_date,
       endDate:          r.end_date,
       lastDisburseDate: r.last_disburse_date || null,

@@ -27,6 +27,15 @@ const budgetDisbursement = sequelize.define(
       allowNull: true,
       defaultValue: 0,
     },
+    // เลขที่เอกสารการเงิน ใช้เชื่อมแผนกับการเบิกจ่าย และจับคู่ผูกพัน → จ่ายจริง
+    fin_no: {
+      type: Sequelize.STRING(50),
+      allowNull: true,
+    },
+    po_no: {
+      type: Sequelize.STRING(50),
+      allowNull: true,
+    },
     note: {
       type: Sequelize.TEXT,
       allowNull: true,
