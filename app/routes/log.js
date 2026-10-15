@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const formidable = require('formidable')
 const log = require('../../models/log')
 const constants = require('../../config/constant')
 const Sequelize = require('sequelize')
@@ -73,18 +72,11 @@ router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   console.log('log add is called')
   
   try {
-    const form = new formidable.IncomingForm();
-    console.log('form.parse(req)',form.parse(req))
-
-    form.parse(req, async (error, fields, files) => {
-      let result = await log.create(fields);
-      // result = await uploadImage(files, result);
-      console.log('req fields',fields)
-
-      res.json({
-        result: constants.kResultOk,
-        message: JSON.stringify(result)
-      });
+    const fields = req.body;
+    const result = await log.create(fields);
+    res.json({
+      result: constants.kResultOk,
+      message: JSON.stringify(result)
     });
   } catch (error) {
     res.json({

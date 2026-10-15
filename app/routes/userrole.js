@@ -1,6 +1,5 @@
 const express = require('express')
 const constants = require('../../config/constant')
-const formidable = require('formidable')
 const router = express.Router()
 const role = require('../../models/role')
 const userrole = require('../../models/userrole')
@@ -67,18 +66,11 @@ router.get('/:id', JwtMiddleware.checkToken, async (req, res) => {
 router.post('/', JwtMiddleware.checkToken, async (req, res) => {
   console.log('userrole add is called')
   try {
-    const form = new formidable.IncomingForm();
-    console.log('form.parse(req)',form.parse(req))
-
-    form.parse(req, async (error, fields, files) => {
-      let result = await userrole.create(fields);
-      // result = await uploadImage(files, result);
-      console.log('req fields',fields)
-
-      res.json({
-        result: constants.kResultOk,
-        message: JSON.stringify(result)
-      });
+    const fields = req.body;
+    const result = await userrole.create(fields);
+    res.json({
+      result: constants.kResultOk,
+      message: JSON.stringify(result)
     });
   } catch (error) {
     res.json({

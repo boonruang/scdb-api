@@ -229,6 +229,8 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
       if (fields.password) {
         console.log('Password not empty need to be crypted')
         fields.password = bcrypt.hashSync(fields.password, 8)
+      } else {
+        delete fields.password
       }
 
       const { roles, id, ...rest } = fields
@@ -313,7 +315,7 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
           })
         }
 
-    return  
+    return res.json({ result: constants.kResultOk })
 
 
   } else if (rolesArr && result) {
@@ -326,17 +328,19 @@ router.put('/', JwtMiddleware.checkToken, async (req, res) => {
           await userrole.create({
             roleId : item.id,
             userId : id,
-            date: Date.now()  
+            date: Date.now()
           })
         }
         return item
        })
-  
-       // end farmergroupfarmerFound  
-    } 
+    return res.json({ result: constants.kResultOk })
+
+       // end farmergroupfarmerFound
+    }
     else {
       console.log('can not update collaborativefarmfarmer')
-    } 
+      return res.json({ result: constants.kResultNok, message: 'can not update user roles' })
+    }
 
 
     })
